@@ -1,46 +1,28 @@
 <!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ระบบฐานข้อมูลการฝึกอบรมบุคลากร | กลุ่มการพยาบาล รพ.โพธาราม</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    * { font-family: 'Prompt', sans-serif !important; }
-    .glass-header { background: linear-gradient(135deg, #38bdf8 0%, #1e3a8a 100%); color: white; box-shadow: 0 4px 20px rgba(30,58,138,0.15); }
-    .card-shadow { box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.05), 0 8px 10px -6px rgba(30, 58, 138, 0.02); }
-    .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .animate-spin { animation: spin 1s linear infinite; }
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  </style>
-</head>
+<html lang="th"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ระบบฐานข้อมูลการฝึกอบรมบุคลากร | กลุ่มการพยาบาล รพ.โพธาราม</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{font-family:Prompt,sans-serif!important}
+.glass-header{background:linear-gradient(135deg,#38bdf8 0%,#1e3a8a 100%);color:#fff;box-shadow:0 4px 20px rgba(30,58,138,.15)}
+.card-shadow{box-shadow:0 10px 25px -5px rgba(30,58,138,.05)}
+.animate-fade{animation:fadeIn .4s ease-out forwards}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.hide-scrollbar::-webkit-scrollbar{display:none}.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+.animate-spin{animation:spin 1s linear infinite}@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+</style></head>
 <body class="bg-sky-50">
-  <div id="root">
-    <div style="display:flex;justify-content:center;align-items:center;height:100vh;color:#1e3a8a;">
-      กำลังโหลดระบบ...
-    </div>
-  </div>
-
-  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
-  <script>
-    // Guard: ensure React is loaded
-    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
-      document.getElementById('root').innerHTML = '<div style="padding:40px;text-align:center;color:#b91c1c;">โหลด React ไม่สำเร็จ กรุณาเชื่อมต่ออินเทอร์เน็ตแล้วรีเฟรชหน้า</div>';
-    }
-  </script>
-  <script>
+<div id="root"><div style="display:flex;justify-content:center;align-items:center;height:100vh;color:#1e3a8a">กำลังโหลดระบบ...</div></div>
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script>
 const {
   useState,
   useEffect,
   useMemo
 } = React;
-
-// --- Simple Icon components (แทน lucide-react) ---
 const iconPaths = {
   Plus: `<path d="M5 12h14"/><path d="M12 5v14"/>`,
   Save: `<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>`,
@@ -95,18 +77,16 @@ function Icon({
     viewBox: '0 0 24 24',
     fill: 'none',
     stroke: 'currentColor',
-    strokeWidth: strokeWidth,
+    strokeWidth,
     strokeLinecap: 'round',
     strokeLinejoin: 'round',
-    className: className,
+    className,
     dangerouslySetInnerHTML: {
       __html: paths
     },
     ...rest
   });
 }
-
-// ชื่อ icon แบบ lucide เพื่อให้ JSX เดิมใช้ได้
 const Plus = p => /*#__PURE__*/React.createElement(Icon, {
   name: "Plus",
   ...p
@@ -262,7 +242,9 @@ const Megaphone = p => /*#__PURE__*/React.createElement(Icon, {
 // ==========================================
 // การตั้งค่า: URL ของ Google Apps Script (เชื่อมกับ Google Sheet)
 // ==========================================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5zyctI9iewJ0UG9xccbTINa4CtUqBDBvdca6RyNuCkwwGdXgQVLKTvJpDYX1XSvaE/exec';
+const SCRIPT_URL_FIXED = 'https://script.google.com/macros/s/AKfycbx5zyctI9iewJ0UG9xccbTINa4CtUqBDBvdca6RyNuCkwwGdXgQVLKTvJpDYX1XSvaE/exec';
+// ถ้าเปิดจาก Apps Script ใช้ URL เดียวกัน, ถ้าเปิดจากไฟล์ HTML ใช้ URL ด้านบน
+const SCRIPT_URL = typeof window !== 'undefined' && String(window.location.href).indexOf('script.google') !== -1 ? String(window.location.href).split('?')[0] : SCRIPT_URL_FIXED;
 const POSITIONS = {
   NURSE: 'พยาบาล',
   PN: 'ผู้ช่วยพยาบาล',
@@ -289,18 +271,36 @@ const STATUS_COLORS = {
   [STAFF_STATUS.INACTIVE]: 'bg-slate-100 text-slate-500 border-slate-200'
 };
 const DEPARTMENTS = ["ANC", "Anes", "CAPD", "ER", "ICU", "LR", "OPD", "OPD จักษุ", "OR", "Ortho", "กุมาร", "จ่ายกลาง", "ไตเทียม", "พิเศษ 1", "พิเศษ 2", "พิเศษ 3", "พิเศษ 4", "ศัลยกรรม", "ศูนย์แพทย์ชุมชนเมือง", "สงฆ์อาพาธ", "สูตินรีเวช", "อายุรกรรมชาย", "อายุรกรรมหญิง"];
-const CATEGORIES = {
-  "ความปลอดภัยและมาตรฐานบังคับ (Mandatory)": ["การช่วยฟื้นคืนชีพ (CPR/BLS/ACLS)", "การป้องกันและควบคุมการติดเชื้อ (IC)", "ความปลอดภัยของผู้ป่วย (Patient Safety / RM)", "ซ้อมแผนระงับอัคคีภัย / ภัยพิบัติ", "อื่นๆ - ความปลอดภัย"],
-  "ทักษะทางคลินิกพื้นฐาน (Core Skills)": ["การบริหารยาและสารน้ำ", "การประเมินอาการและติดตามผู้ป่วย", "การใช้อุปกรณ์ทางการแพทย์", "การพยาบาลทั่วไป", "อื่นๆ - ทักษะพื้นฐาน"],
-  "การพยาบาลเฉพาะทาง (Specialty)": ["อายุรกรรม / ศัลยกรรม", "ผู้ป่วยวิกฤต / ฉุกเฉิน (ICU/ER)", "การบำบัดทดแทนไต / CAPD", "สูติ-นรีเวช / กุมารเวชกรรม", "ออร์โธปิดิกส์", "Palliative Care", "อื่นๆ - เฉพาะทาง"],
-  "การบริหารงานพยาบาล (Management)": ["การบริหารจัดการหอผู้ป่วย", "การบริหารทรัพยากรบุคคล (HR)", "การจัดอัตรากำลัง / ภาระงาน", "การบริหารการเงิน / การคลัง", "อื่นๆ - การบริหาร"],
-  "การวิจัยและพัฒนาคุณภาพ (CQI)": ["การทำวิจัย / R2R", "การพัฒนาคุณภาพ (CQI) / นวัตกรรม", "การเตรียมรับการประเมิน (HA / Accreditation)", "อื่นๆ - พัฒนาคุณภาพ"],
-  "ระบบสารสนเทศและเทคโนโลยีดิจิทัล (IT)": ["ระบบข้อมูลโรงพยาบาล (HosXp / ENR)", "โปรแกรมประยุกต์ / Dashboard", "อื่นๆ - IT"],
-  "การประชุมและแลกเปลี่ยนเรียนรู้": ["ประชุมประจำเดือน / ประชุมหน่วยงาน", "ประชุมวิชาการ / Service Plan", "ประชุมเครือข่าย", "กิจกรรม 5ส / พัฒนาองค์กร", "อื่นๆ - การประชุม"],
-  "ภาวะผู้นำและทักษะการทำงาน (Soft Skills)": ["พฤติกรรมบริการ / การจัดการข้อร้องเรียน", "ภาวะผู้นำ / การทำงานเป็นทีม", "อื่นๆ - Soft Skills"],
-  "กฎหมายและจริยธรรมวิชาชีพ": ["กฎหมายทางการแพทย์และพยาบาล", "จริยธรรมและจรรยาบรรณวิชาชีพ", "สิทธิผู้ป่วยและข้อร้องเรียน", "อื่นๆ - กฎหมาย/จริยธรรม"],
-  "การปฐมนิเทศและพัฒนาบุคลากร": ["ปฐมนิเทศบุคลากรใหม่", "การเตรียมความพร้อมก่อนขึ้นเวร (Preceptor)", "ศึกษาต่อ / อบรมระยะยาว", "อื่นๆ - พัฒนาบุคลากร"],
-  "อื่นๆ (ระบุเอง)": []
+
+// หมวดหมู่หลักเท่านั้น (ไม่มีย่อย) — เลือกง่าย รายงานไม่แตก
+const CATEGORIES = ["ความปลอดภัยและมาตรฐานบังคับ", "ทักษะทางคลินิกพื้นฐาน", "การพยาบาลเฉพาะทาง", "ระบบสารสนเทศและ IT", "การบริหารงานพยาบาล", "การพัฒนาคุณภาพ (CQI) และการวิจัย", "การประชุมภายในหน่วยงาน", "อื่นๆ"];
+
+// ตัวอย่างหัวข้อที่เกี่ยวข้อง (แสดงเป็นคำแนะนำ ไม่บังคับเลือก)
+const CATEGORY_EXAMPLES = {
+  "ความปลอดภัยและมาตรฐานบังคับ": "เช่น IC, ป้องกันเชื้อดื้อยา, Patient Safety, แผลกดทับ, BLS/ACLS, ความปลอดภัยด้านยา, อัคคีภัย, กฎหมายและจริยธรรม, ผลประโยชน์ทับซ้อน",
+  "ทักษะทางคลินิกพื้นฐาน": "เช่น การประเมินอาการ (NEWS), บันทึกทางการพยาบาล, การประเมินความปวด, High Flow, Defibrillator, การให้ยา, การพยาบาลทั่วไป",
+  "การพยาบาลเฉพาะทาง": "เช่น ICU/ER, Stroke, Sepsis, ไตเทียม, จิตเวช, Ortho, วิสัญญี, สูตินรีเวช, ห้องผ่าตัด",
+  "ระบบสารสนเทศและ IT": "เช่น ENR, HosXp, Smart COC, Go To Win, Web App NSO, Productivity, Claim, Digital Health",
+  "การบริหารงานพยาบาล": "เช่น บริหารทรัพยากรบุคคล, นิเทศทางการพยาบาล, เขียนแผนยุทธศาสตร์, Service Plan, จัดซื้อจัดจ้าง, Workflow, ภาวะผู้นำ",
+  "การพัฒนาคุณภาพ (CQI) และการวิจัย": "เช่น CQI, นวัตกรรม, HA / NQA, ตัวชี้วัดคุณภาพ, งานวิจัย / R2R",
+  "การประชุมภายในหน่วยงาน": "เช่น ประชุมตึก, ประชุมวอร์ด, Grand Round, ประชุมประจำเดือน",
+  "อื่นๆ": "ใช้เมื่อไม่เข้ากับหมวดด้านบน — พิมพ์รายละเอียดเพิ่มได้ รายงานจะแสดงเป็น「อื่นๆ」"
+};
+
+// แปลงหมวดเก่า/ข้อความอิสระ → หมวดสำหรับรายงาน (อื่นๆ รวมเป็นคำเดียว)
+const reportCategory = cat => {
+  if (!cat) return 'ไม่ระบุ';
+  const c = String(cat).trim();
+  if (CATEGORIES.includes(c)) return c;
+  // หมวดเก่าที่เลิกใช้แล้ว → map คร่าว ๆ
+  if (c.includes('Mandatory') || c.includes('ความปลอดภัย') || c.includes('กฎหมาย') || c.includes('จริยธรรม')) return 'ความปลอดภัยและมาตรฐานบังคับ';
+  if (c.includes('Core Skills') || c.includes('ทักษะทางคลินิก') || c.includes('ปฐมนิเทศ')) return 'ทักษะทางคลินิกพื้นฐาน';
+  if (c.includes('Specialty') || c.includes('เฉพาะทาง')) return 'การพยาบาลเฉพาะทาง';
+  if (c.includes('IT') || c.includes('สารสนเทศ') || c.includes('เทคโนโลยี')) return 'ระบบสารสนเทศและ IT';
+  if (c.includes('Management') || c.includes('บริหาร') || c.includes('Soft Skills') || c.includes('ภาวะผู้นำ')) return 'การบริหารงานพยาบาล';
+  if (c.includes('CQI') || c.includes('วิจัย') || c.includes('คุณภาพ')) return 'การพัฒนาคุณภาพ (CQI) และการวิจัย';
+  if (c.includes('ประชุม')) return 'การประชุมภายในหน่วยงาน';
+  return 'อื่นๆ'; // รายงานแสดงแค่คำว่า อื่นๆ
 };
 const TRAINING_METHODS = ["Onsite (จัดในสถานที่)", "Online (ออนไลน์)", "Hybrid (ผสมผสาน)"];
 const KM_LOCATIONS = ["ห้องเรียนเมืองคนสวย", "อื่นๆ (ระบุเอง)"];
@@ -372,7 +372,8 @@ const getFiscalYear = dateString => {
 };
 function App() {
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('km');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [drillDept, setDrillDept] = useState(''); // ตึกที่คลิกดูรายละเอียด 
 
   // Data States
   const [records, setRecords] = useState([]);
@@ -474,13 +475,13 @@ function App() {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     setUser({
       uid: 'local-user'
-    }); // ไม่ใช้ Firebase แล้ว
+    });
     return () => clearInterval(timer);
   }, []);
   const fetchFromGoogleSheet = async () => {
     setLoading(true);
     try {
-      const response = await fetch(SCRIPT_URL);
+      const response = await fetch(SCRIPT_URL + (SCRIPT_URL.indexOf('?') >= 0 ? '&' : '?') + 'format=json');
       if (!response.ok) throw new Error("การเชื่อมต่อล้มเหลว Status: " + response.status);
       const result = await response.json();
       if (result.status === 'success') {
@@ -617,8 +618,7 @@ function App() {
         ...prev,
         category: value,
         subCategory: '',
-        customCategory: '',
-        customSubCategory: ''
+        customCategory: ''
       }));
     }
   };
@@ -634,8 +634,10 @@ function App() {
     }
     const sanitizedStart = normalizeDate(formData.startDate);
     const fiscalYear = getFiscalYear(sanitizedStart);
-    const finalCategory = formData.category === 'อื่นๆ (ระบุเอง)' ? formData.customCategory || 'อื่นๆ' : formData.category;
-    const finalSubCategory = formData.category === 'อื่นๆ (ระบุเอง)' ? formData.customSubCategory || '' : formData.subCategory;
+    // หมวดหลัก: ถ้าเลือก "อื่นๆ" บันทึกเป็น "อื่นๆ" เสมอ (รายงานจะรวมเป็นคำเดียว)
+    // รายละเอียดที่พิมพ์เองเก็บใน subCategory เพื่อเปิดดูทีหลังได้
+    const finalCategory = formData.category === 'อื่นๆ' ? 'อื่นๆ' : formData.category;
+    const finalSubCategory = formData.category === 'อื่นๆ' ? formData.customCategory || '' : '';
     const payload = {
       ...formData,
       category: finalCategory,
@@ -727,7 +729,8 @@ function App() {
       const matched = staffList.find(s => s.name === record.staffName);
       if (matched) currentStaffId = matched.id;
     }
-    const isCustomCat = record.category && !Object.keys(CATEGORIES).includes(record.category);
+    const mappedCat = reportCategory(record.category);
+    const isOther = mappedCat === 'อื่นๆ';
     setFormData({
       id: record.id || '',
       staffId: currentStaffId || '',
@@ -739,8 +742,8 @@ function App() {
       endDate: normalizeDate(record.endDate),
       hours: record.hours ? record.hours.toString() : '',
       host: record.host || '',
-      category: isCustomCat ? 'อื่นๆ (ระบุเอง)' : record.category || '',
-      subCategory: isCustomCat ? '' : record.subCategory || '',
+      category: isOther ? 'อื่นๆ' : mappedCat,
+      subCategory: record.subCategory || '',
       fiscalYear: record.fiscalYear || '',
       createdAt: record.createdAt || '',
       knowledgeSummary: record.knowledgeSummary || '',
@@ -748,8 +751,8 @@ function App() {
       trainingMethod: record.trainingMethod || TRAINING_METHODS[0],
       projectPlan: record.projectPlan || '',
       outcomes: record.outcomes || '',
-      customCategory: isCustomCat ? record.category : '',
-      customSubCategory: isCustomCat ? record.subCategory : ''
+      customCategory: isOther ? record.subCategory || (CATEGORIES.includes(record.category) ? '' : record.category || '') : '',
+      customSubCategory: ''
     });
     setSearchQuery(record.staffName || '');
     setEditingId(record.id);
@@ -950,11 +953,59 @@ function App() {
     });
     return s;
   }, [dashboardStats]);
+
+  // สถิติรายบุคคลทั้งองค์กร (ไม่กรองตึก) — ให้ตรงกับแถบความก้าวหน้ารายคน
+  const allStaffStats = useMemo(() => {
+    const active = staffList.filter(isActiveStaff);
+    const yearRecords = filterYear ? records.filter(r => String(r.fiscalYear || '') === String(filterYear)) : records;
+    const stats = {};
+    active.forEach(s => {
+      const id = String(s.id || '');
+      stats[id] = {
+        ...s,
+        id,
+        totalHours: 0,
+        targetHours: parseFloat(s.targetHours) || TARGET_HOURS[s.position] || 10
+      };
+    });
+    const list = Object.values(stats);
+    yearRecords.forEach(r => {
+      const h = parseFloat(r.hours) || 0;
+      if (!h) return;
+      let target = null;
+      if (r.staffId && stats[String(r.staffId)]) target = stats[String(r.staffId)];
+      if (!target && r.staffName) {
+        const name = safeTrim(r.staffName);
+        target = list.find(s => safeTrim(s.name) === name) || null;
+      }
+      if (target) target.totalHours += h;
+    });
+    return list.map(s => ({
+      ...s,
+      totalHours: Math.round(s.totalHours)
+    }));
+  }, [staffList, records, filterYear]);
+
+  // สถิติรายตึก (ทั้งหมด vs ผ่านเกณฑ์)
+  const deptOverview = useMemo(() => {
+    const byDept = {};
+    allStaffStats.forEach(s => {
+      const d = s.department || 'ไม่ระบุ';
+      if (!byDept[d]) byDept[d] = {
+        dept: d,
+        total: 0,
+        passed: 0
+      };
+      byDept[d].total++;
+      if (s.totalHours >= s.targetHours) byDept[d].passed++;
+    });
+    return Object.values(byDept).sort((a, b) => b.total - a.total);
+  }, [allStaffStats]);
   const displayedDashboardStats = useMemo(() => dashboardStats.filter(s => (filterCompletion === 'passed' ? s.totalHours >= s.targetHours : filterCompletion === 'failed' ? s.totalHours < s.targetHours : true) && (progFilterPos ? s.position === progFilterPos : true) && (progFilterDept ? s.department === progFilterDept : true)), [dashboardStats, filterCompletion, progFilterPos, progFilterDept]);
   const categoryStats = useMemo(() => {
     const s = {};
     filteredRecords.forEach(r => {
-      const c = r.category || 'ไม่ระบุ';
+      const c = reportCategory(r.category);
       s[c] = (s[c] || 0) + (parseFloat(r.hours) || 0);
     });
     return Object.entries(s).map(([cat, hours]) => [cat, Math.round(hours)]).sort((a, b) => b[1] - a[1]);
@@ -977,7 +1028,7 @@ function App() {
       return;
     }
     const headers = ["ปีงบประมาณ", "ชื่อ-สกุล", "ตำแหน่ง", "หน่วยงาน", "ชื่อหลักสูตร", "รูปแบบ", "วันที่เริ่ม", "วันที่สิ้นสุด", "ชั่วโมง", "หมวดหมู่หลัก", "ผู้จัด", "แผนงาน/โครงการ", "ผลลัพธ์"];
-    const csvContent = [headers.join(","), ...filteredRecords.map(r => `"${r.fiscalYear || ''}","${safeStr(r.staffName)}","${safeStr(r.position)}","${safeStr(r.department)}","${safeStr(r.courseName)}","${safeStr(r.trainingMethod)}","${r.startDate ? normalizeDate(r.startDate) : ''}","${r.endDate ? normalizeDate(r.endDate) : ''}","${r.hours || 0}","${safeStr(r.category)}","${safeStr(r.host)}","${safeStr(r.projectPlan).replace(/"/g, '""')}","${safeStr(r.outcomes).replace(/"/g, '""')}"`)].join("\n");
+    const csvContent = [headers.join(","), ...filteredRecords.map(r => `"${r.fiscalYear || ''}","${safeStr(r.staffName)}","${safeStr(r.position)}","${safeStr(r.department)}","${safeStr(r.courseName)}","${safeStr(r.trainingMethod)}","${r.startDate ? normalizeDate(r.startDate) : ''}","${r.endDate ? normalizeDate(r.endDate) : ''}","${r.hours || 0}","${reportCategory(r.category)}","${safeStr(r.host)}","${safeStr(r.projectPlan).replace(/"/g, '""')}","${safeStr(r.outcomes).replace(/"/g, '""')}"`)].join("\n");
     const blob = new Blob(["\uFEFF" + csvContent], {
       type: 'text/csv;charset=utf-8;'
     });
@@ -1164,9 +1215,9 @@ function App() {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex p-1.5 bg-white rounded-xl border border-sky-100 card-shadow max-w-5xl mx-auto min-w-max"
   }, [{
-    id: 'km',
-    icon: Share2,
-    label: 'ลานแลกเปลี่ยนความรู้'
+    id: 'dashboard',
+    icon: BarChart2,
+    label: 'รายงานภาพรวม'
   }, {
     id: 'form',
     icon: Plus,
@@ -1176,21 +1227,21 @@ function App() {
     icon: FileText,
     label: 'ข้อมูลการอบรม'
   }, {
-    id: 'dashboard',
-    icon: BarChart2,
-    label: 'รายงาน & ภาพรวม'
+    id: 'km',
+    icon: Share2,
+    label: 'ลาน KM'
   }, {
     id: 'staff',
     icon: Users,
-    label: 'ฐานข้อมูลบุคลากร'
+    label: 'บุคลากร'
   }].map((tab, idx) => /*#__PURE__*/React.createElement("button", {
     key: `nav-${tab.id}-${idx}`,
     onClick: () => setActiveTab(tab.id),
-    className: `flex-1 flex items-center justify-center py-3 px-4 rounded-lg font-semibold text-sm transition-all duration-200 whitespace-nowrap
+    className: `flex-1 flex items-center justify-center py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 whitespace-nowrap
                             ${activeTab === tab.id ? 'bg-blue-900 text-white shadow-md shadow-blue-900/20' : 'text-slate-500 hover:text-blue-900 hover:bg-sky-50'}`
   }, /*#__PURE__*/React.createElement(tab.icon, {
-    size: 18,
-    className: `mr-2 flex-shrink-0 ${activeTab === tab.id ? 'text-white' : ''}`
+    size: 16,
+    className: `mr-1.5 sm:mr-2 flex-shrink-0 ${activeTab === tab.id ? 'text-white' : ''}`
   }), /*#__PURE__*/React.createElement("span", null, tab.label))))), loading ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col justify-center items-center h-64"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1742,54 +1793,38 @@ function App() {
     onChange: handleInputChange,
     className: INPUT_CLASS,
     placeholder: "เช่น รพ.โพธาราม, สสจ."
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "col-span-1 md:col-span-2"
+  }, /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-semibold text-slate-700 mb-2"
-  }, "หมวดหมู่หลัก"), /*#__PURE__*/React.createElement("select", {
+  }, "หมวดหมู่"), /*#__PURE__*/React.createElement("select", {
     name: "category",
     value: formData.category,
     onChange: handleInputChange,
     className: INPUT_CLASS
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, "-- ไม่ระบุ --"), Object.keys(CATEGORIES).map((cat, idx) => /*#__PURE__*/React.createElement("option", {
+  }, "-- ไม่ระบุ --"), CATEGORIES.map((cat, idx) => /*#__PURE__*/React.createElement("option", {
     key: `cat-${cat}-${idx}`,
     value: cat
-  }, cat)))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
-    className: "block text-sm font-semibold text-slate-700 mb-2"
-  }, "หมวดหมู่ย่อย"), /*#__PURE__*/React.createElement("select", {
-    name: "subCategory",
-    value: formData.subCategory,
-    onChange: handleInputChange,
-    disabled: !formData.category || formData.category === 'อื่นๆ (ระบุเอง)',
-    className: `${INPUT_CLASS} disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-200`
-  }, /*#__PURE__*/React.createElement("option", {
-    value: ""
-  }, "-- ไม่ระบุ --"), formData.category && CATEGORIES[formData.category]?.map((sub, idx) => /*#__PURE__*/React.createElement("option", {
-    key: `sub-${sub}-${idx}`,
-    value: sub
-  }, sub)))), formData.category === 'อื่นๆ (ระบุเอง)' && /*#__PURE__*/React.createElement("div", {
-    className: "col-span-1 md:col-span-2 p-4 bg-amber-50 border border-amber-200 rounded-xl mt-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-1 md:grid-cols-2 gap-4"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+  }, cat))), formData.category && CATEGORY_EXAMPLES[formData.category] && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 p-3 bg-sky-50 border border-sky-100 rounded-xl text-xs text-slate-600 leading-relaxed"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-sky-700"
+  }, "ตัวอย่างที่เกี่ยวข้อง: "), CATEGORY_EXAMPLES[formData.category])), formData.category === 'อื่นๆ' && /*#__PURE__*/React.createElement("div", {
+    className: "col-span-1 md:col-span-2 p-4 bg-amber-50 border border-amber-200 rounded-xl"
+  }, /*#__PURE__*/React.createElement("label", {
     className: "block text-xs font-bold text-amber-800 mb-1"
-  }, "ระบุหมวดหมู่หลักเอง"), /*#__PURE__*/React.createElement("input", {
+  }, "ระบุรายละเอียดเพิ่มเติม (ไม่บังคับ)"), /*#__PURE__*/React.createElement("input", {
     type: "text",
     name: "customCategory",
     value: formData.customCategory,
     onChange: handleInputChange,
     className: `${INPUT_CLASS} border-amber-300 focus:ring-amber-400`,
-    placeholder: "ระบุหมวดหมู่หลัก..."
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
-    className: "block text-xs font-bold text-amber-800 mb-1"
-  }, "ระบุหมวดหมู่ย่อยเอง"), /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    name: "customSubCategory",
-    value: formData.customSubCategory,
-    onChange: handleInputChange,
-    className: `${INPUT_CLASS} border-amber-300 focus:ring-amber-400`,
-    placeholder: "ระบุหมวดหมู่ย่อย..."
-  })))))), /*#__PURE__*/React.createElement("div", {
+    placeholder: "เช่น ชื่อหัวข้อที่ต้องการระบุเพิ่ม..."
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-amber-700 mt-1.5"
+  }, "ในรายงานจะแสดงเป็น「อื่นๆ」 — รายละเอียดนี้เก็บไว้เปิดดูในรายการได้")))), /*#__PURE__*/React.createElement("div", {
     className: "p-6 rounded-2xl border border-indigo-100 bg-indigo-50/30"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-bold text-indigo-900 mb-5 flex items-center"
@@ -2111,62 +2146,122 @@ function App() {
   }, Math.round(dashboardStats.reduce((acc, curr) => acc + curr.totalHours, 0)), " ", /*#__PURE__*/React.createElement("span", {
     className: "text-sm font-semibold text-slate-400"
   }, "ชม."))))), /*#__PURE__*/React.createElement("div", {
-    className: "bg-white rounded-3xl border border-sky-100 card-shadow p-6"
+    className: "bg-white rounded-3xl border border-sky-100 card-shadow p-4 sm:p-6"
   }, /*#__PURE__*/React.createElement("h2", {
-    className: "text-lg font-bold text-blue-900 mb-4 flex items-center"
+    className: "text-base sm:text-lg font-bold text-blue-900 mb-4 flex items-center"
   }, /*#__PURE__*/React.createElement(Award, {
-    className: "mr-3 text-sky-500",
+    className: "mr-2 sm:mr-3 text-sky-500",
     size: 20
-  }), " สรุปผลการผ่านเกณฑ์ (อบรมครบตามเป้าหมาย)"), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-2 md:grid-cols-4 gap-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-slate-50 rounded-2xl p-4 border border-slate-100 text-center"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-slate-500 mb-1"
-  }, "ภาพรวมทั้งหมด"), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-baseline justify-center gap-1"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-2xl font-black text-emerald-600"
-  }, completionStats.total.passed), /*#__PURE__*/React.createElement("span", {
-    className: "text-sm font-bold text-slate-400"
-  }, "/ ", completionStats.total.all, " คน")), /*#__PURE__*/React.createElement("div", {
-    className: "w-full bg-slate-200 rounded-full h-1.5 mt-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-emerald-500 h-1.5 rounded-full",
-    style: {
-      width: `${completionStats.total.all > 0 ? completionStats.total.passed / completionStats.total.all * 100 : 0}%`
-    }
+  }), " สรุปผลการผ่านเกณฑ์"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4"
+  }, [{
+    label: 'ภาพรวมทั้งหมด',
+    passed: completionStats.total.passed,
+    all: completionStats.total.all,
+    bg: 'bg-slate-50 border-slate-100',
+    labelCls: 'text-slate-500'
+  }, {
+    label: POSITIONS.NURSE,
+    passed: completionStats[POSITIONS.NURSE].passed,
+    all: completionStats[POSITIONS.NURSE].all,
+    bg: 'bg-sky-50/50 border-sky-100',
+    labelCls: 'text-blue-800'
+  }, {
+    label: POSITIONS.PN,
+    passed: completionStats[POSITIONS.PN].passed,
+    all: completionStats[POSITIONS.PN].all,
+    bg: 'bg-indigo-50/50 border-indigo-100',
+    labelCls: 'text-indigo-800'
+  }, {
+    label: POSITIONS.ORDERLY,
+    passed: completionStats[POSITIONS.ORDERLY].passed,
+    all: completionStats[POSITIONS.ORDERLY].all,
+    bg: 'bg-teal-50/50 border-teal-100',
+    labelCls: 'text-teal-800'
+  }].map((item, i) => {
+    const pct = item.all > 0 ? Math.round(item.passed / item.all * 100) : 0;
+    return /*#__PURE__*/React.createElement("div", {
+      key: i,
+      className: `${item.bg} rounded-2xl p-3 sm:p-4 border text-center`
+    }, /*#__PURE__*/React.createElement("p", {
+      className: `text-[10px] sm:text-xs font-bold ${item.labelCls} mb-1`
+    }, item.label), /*#__PURE__*/React.createElement("div", {
+      className: "flex items-baseline justify-center gap-1"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-xl sm:text-2xl font-black text-emerald-600"
+    }, item.passed), /*#__PURE__*/React.createElement("span", {
+      className: "text-xs sm:text-sm font-bold text-slate-400"
+    }, "/ ", item.all)), /*#__PURE__*/React.createElement("div", {
+      className: "text-lg sm:text-xl font-black text-blue-900 mt-1"
+    }, pct, "%"), /*#__PURE__*/React.createElement("div", {
+      className: "w-full bg-slate-200 rounded-full h-1.5 mt-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-emerald-500 h-1.5 rounded-full transition-all",
+      style: {
+        width: `${pct}%`
+      }
+    })));
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "bg-sky-50/50 rounded-2xl p-4 border border-sky-100 text-center"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-blue-800 mb-1"
-  }, POSITIONS.NURSE), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-baseline justify-center gap-1"
+    className: "bg-white rounded-3xl border border-sky-100 card-shadow p-4 sm:p-6"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-base sm:text-lg font-bold text-blue-900 mb-2 flex items-center flex-wrap gap-2"
+  }, /*#__PURE__*/React.createElement(BarChart2, {
+    className: "text-sky-500",
+    size: 20
+  }), " เปรียบเทียบรายหน่วยงาน / ตึก", filterYear && /*#__PURE__*/React.createElement("span", {
+    className: "text-[11px] bg-sky-100 text-blue-800 px-2 py-0.5 rounded-md"
+  }, "ปี ", filterYear)), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-500 mb-4"
+  }, "แท่งเทา = จำนวนคนทั้งหมด · แท่งเขียว = ผ่านเกณฑ์ · แตะแท่งเพื่อดูรายละเอียด"), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3 max-h-[420px] overflow-y-auto pr-1"
+  }, deptOverview.length === 0 ? /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-400 text-center py-6"
+  }, "ไม่มีข้อมูลบุคลากร") : deptOverview.map(d => {
+    const maxT = Math.max(...deptOverview.map(x => x.total), 1);
+    const pctAll = Math.round(d.total / maxT * 100);
+    const pctPass = d.total > 0 ? Math.round(d.passed / d.total * 100) : 0;
+    const isActive = drillDept === d.dept;
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      key: d.dept,
+      onClick: () => {
+        setDrillDept(isActive ? '' : d.dept);
+        setProgFilterDept(isActive ? '' : d.dept);
+        setFilterDept(isActive ? '' : d.dept);
+      },
+      className: `w-full text-left p-3 rounded-xl border transition-all ${isActive ? 'border-blue-400 bg-blue-50 ring-2 ring-blue-200' : 'border-slate-100 hover:border-sky-200 hover:bg-sky-50/50'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between items-center mb-1.5 gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-sm font-bold text-slate-800 truncate"
+    }, d.dept), /*#__PURE__*/React.createElement("span", {
+      className: "text-xs font-semibold text-slate-500 whitespace-nowrap"
+    }, d.passed, "/", d.total, " คน (", pctPass, "%)")), /*#__PURE__*/React.createElement("div", {
+      className: "relative h-7 bg-slate-100 rounded-lg overflow-hidden"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "absolute inset-y-0 left-0 bg-slate-300 rounded-lg",
+      style: {
+        width: `${pctAll}%`
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-lg",
+      style: {
+        width: `${Math.round(d.passed / maxT * 100)}%`
+      }
+    })));
+  })), drillDept && /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 p-3 bg-blue-50 border border-blue-100 rounded-xl flex flex-wrap items-center justify-between gap-2"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-2xl font-black text-emerald-600"
-  }, completionStats[POSITIONS.NURSE].passed), /*#__PURE__*/React.createElement("span", {
-    className: "text-sm font-bold text-slate-400"
-  }, "/ ", completionStats[POSITIONS.NURSE].all))), /*#__PURE__*/React.createElement("div", {
-    className: "bg-indigo-50/50 rounded-2xl p-4 border border-indigo-100 text-center"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-indigo-800 mb-1"
-  }, POSITIONS.PN), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-baseline justify-center gap-1"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-2xl font-black text-emerald-600"
-  }, completionStats[POSITIONS.PN].passed), /*#__PURE__*/React.createElement("span", {
-    className: "text-sm font-bold text-slate-400"
-  }, "/ ", completionStats[POSITIONS.PN].all))), /*#__PURE__*/React.createElement("div", {
-    className: "bg-teal-50/50 rounded-2xl p-4 border border-teal-100 text-center"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-teal-800 mb-1"
-  }, POSITIONS.ORDERLY), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-baseline justify-center gap-1"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-2xl font-black text-emerald-600"
-  }, completionStats[POSITIONS.ORDERLY].passed), /*#__PURE__*/React.createElement("span", {
-    className: "text-sm font-bold text-slate-400"
-  }, "/ ", completionStats[POSITIONS.ORDERLY].all))))), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-bold text-blue-900"
+  }, "กำลังดูรายละเอียด: ", drillDept), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => {
+      setDrillDept('');
+      setProgFilterDept('');
+      setFilterDept('');
+    },
+    className: "text-xs font-bold text-blue-700 bg-white px-3 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-100"
+  }, "ล้างตัวกรอง"))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 lg:grid-cols-2 gap-6"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-3xl border border-sky-100 card-shadow p-8"
@@ -2508,8 +2603,6 @@ function App() {
     }))));
   }))))))))));
 }
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(/*#__PURE__*/React.createElement(App, null));
-  </script>
-</body>
-</html>
+</script></body></html>
