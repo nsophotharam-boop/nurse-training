@@ -1,0 +1,2515 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบฐานข้อมูลการฝึกอบรมบุคลากร | กลุ่มการพยาบาล รพ.โพธาราม</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Prompt', sans-serif !important; }
+    .glass-header { background: linear-gradient(135deg, #38bdf8 0%, #1e3a8a 100%); color: white; box-shadow: 0 4px 20px rgba(30,58,138,0.15); }
+    .card-shadow { box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.05), 0 8px 10px -6px rgba(30, 58, 138, 0.02); }
+    .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .animate-spin { animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="bg-sky-50">
+  <div id="root">
+    <div style="display:flex;justify-content:center;align-items:center;height:100vh;color:#1e3a8a;">
+      กำลังโหลดระบบ...
+    </div>
+  </div>
+
+  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script>
+    // Guard: ensure React is loaded
+    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+      document.getElementById('root').innerHTML = '<div style="padding:40px;text-align:center;color:#b91c1c;">โหลด React ไม่สำเร็จ กรุณาเชื่อมต่ออินเทอร์เน็ตแล้วรีเฟรชหน้า</div>';
+    }
+  </script>
+  <script>
+const {
+  useState,
+  useEffect,
+  useMemo
+} = React;
+
+// --- Simple Icon components (แทน lucide-react) ---
+const iconPaths = {
+  Plus: `<path d="M5 12h14"/><path d="M12 5v14"/>`,
+  Save: `<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>`,
+  FileText: `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>`,
+  BarChart2: `<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>`,
+  Edit: `<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>`,
+  Trash2: `<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>`,
+  Calendar: `<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>`,
+  Clock: `<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>`,
+  User: `<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>`,
+  CheckCircle: `<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>`,
+  Search: `<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>`,
+  Activity: `<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>`,
+  Award: `<circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>`,
+  Filter: `<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>`,
+  Users: `<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`,
+  Building2: `<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>`,
+  Download: `<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>`,
+  TrendingUp: `<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>`,
+  PieChart: `<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>`,
+  AlertCircle: `<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>`,
+  Loader2: `<path d="M21 12a9 9 0 1 1-6.219-8.56"/>`,
+  Video: `<path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2" ry="2"/>`,
+  MapPin: `<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>`,
+  XCircle: `<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>`,
+  RefreshCw: `<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>`,
+  HelpCircle: `<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>`,
+  BookOpen: `<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>`,
+  Info: `<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>`,
+  ChevronLeft: `<polyline points="15 18 9 12 15 6"/>`,
+  ChevronRight: `<polyline points="9 18 15 12 9 6"/>`,
+  Share2: `<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>`,
+  Lightbulb: `<path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>`,
+  Target: `<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>`,
+  Link2: `<path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/>`,
+  ChevronDown: `<polyline points="6 9 12 15 18 9"/>`,
+  CalendarCheck: `<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/>`,
+  Megaphone: `<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>`
+};
+function Icon({
+  name,
+  size = 24,
+  className = '',
+  strokeWidth = 2,
+  ...rest
+}) {
+  const paths = iconPaths[name] || iconPaths.Activity;
+  return React.createElement('svg', {
+    xmlns: 'http://www.w3.org/2000/svg',
+    width: size,
+    height: size,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: strokeWidth,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+    className: className,
+    dangerouslySetInnerHTML: {
+      __html: paths
+    },
+    ...rest
+  });
+}
+
+// ชื่อ icon แบบ lucide เพื่อให้ JSX เดิมใช้ได้
+const Plus = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Plus",
+  ...p
+});
+const Save = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Save",
+  ...p
+});
+const FileText = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "FileText",
+  ...p
+});
+const BarChart2 = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "BarChart2",
+  ...p
+});
+const Edit = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Edit",
+  ...p
+});
+const Trash2 = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Trash2",
+  ...p
+});
+const Calendar = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Calendar",
+  ...p
+});
+const Clock = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Clock",
+  ...p
+});
+const User = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "User",
+  ...p
+});
+const CheckCircle = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "CheckCircle",
+  ...p
+});
+const Search = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Search",
+  ...p
+});
+const Activity = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Activity",
+  ...p
+});
+const Award = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Award",
+  ...p
+});
+const Filter = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Filter",
+  ...p
+});
+const Users = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Users",
+  ...p
+});
+const Building2 = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Building2",
+  ...p
+});
+const Download = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Download",
+  ...p
+});
+const TrendingUp = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "TrendingUp",
+  ...p
+});
+const PieChart = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "PieChart",
+  ...p
+});
+const AlertCircle = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "AlertCircle",
+  ...p
+});
+const Loader2 = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Loader2",
+  className: (p.className || '') + ' animate-spin',
+  ...p
+});
+const Video = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Video",
+  ...p
+});
+const MapPin = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "MapPin",
+  ...p
+});
+const XCircle = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "XCircle",
+  ...p
+});
+const RefreshCw = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "RefreshCw",
+  ...p
+});
+const HelpCircle = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "HelpCircle",
+  ...p
+});
+const BookOpen = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "BookOpen",
+  ...p
+});
+const Info = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Info",
+  ...p
+});
+const ChevronLeft = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "ChevronLeft",
+  ...p
+});
+const ChevronRight = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "ChevronRight",
+  ...p
+});
+const Share2 = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Share2",
+  ...p
+});
+const Lightbulb = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Lightbulb",
+  ...p
+});
+const Target = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Target",
+  ...p
+});
+const Link2 = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Link2",
+  ...p
+});
+const ChevronDown = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "ChevronDown",
+  ...p
+});
+const CalendarCheck = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "CalendarCheck",
+  ...p
+});
+const Megaphone = p => /*#__PURE__*/React.createElement(Icon, {
+  name: "Megaphone",
+  ...p
+});
+
+// --- Firebase Configuration ---
+
+// ==========================================
+// การตั้งค่า: URL ของ Google Apps Script (เชื่อมกับ Google Sheet)
+// ==========================================
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5zyctI9iewJ0UG9xccbTINa4CtUqBDBvdca6RyNuCkwwGdXgQVLKTvJpDYX1XSvaE/exec';
+const POSITIONS = {
+  NURSE: 'พยาบาล',
+  PN: 'ผู้ช่วยพยาบาล',
+  ORDERLY: 'ผู้ช่วยเหลือคนไข้'
+};
+const TARGET_HOURS = {
+  [POSITIONS.NURSE]: 60,
+  [POSITIONS.PN]: 10,
+  [POSITIONS.ORDERLY]: 10
+};
+const POSITION_COLORS = {
+  [POSITIONS.NURSE]: 'bg-sky-100 text-blue-800 border-sky-200',
+  [POSITIONS.PN]: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+  [POSITIONS.ORDERLY]: 'bg-teal-100 text-teal-700 border-teal-200'
+};
+
+// สถานะเจ้าหน้าที่ — คนที่ "ไม่ได้ปฏิบัติงาน" จะไม่ถูกนับในสถิติทั้งหมด
+const STAFF_STATUS = {
+  ACTIVE: 'ปฏิบัติงาน',
+  INACTIVE: 'ไม่ได้ปฏิบัติงาน'
+};
+const STATUS_COLORS = {
+  [STAFF_STATUS.ACTIVE]: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  [STAFF_STATUS.INACTIVE]: 'bg-slate-100 text-slate-500 border-slate-200'
+};
+const DEPARTMENTS = ["ANC", "Anes", "CAPD", "ER", "ICU", "LR", "OPD", "OPD จักษุ", "OR", "Ortho", "กุมาร", "จ่ายกลาง", "ไตเทียม", "พิเศษ 1", "พิเศษ 2", "พิเศษ 3", "พิเศษ 4", "ศัลยกรรม", "ศูนย์แพทย์ชุมชนเมือง", "สงฆ์อาพาธ", "สูตินรีเวช", "อายุรกรรมชาย", "อายุรกรรมหญิง"];
+const CATEGORIES = {
+  "ความปลอดภัยและมาตรฐานบังคับ (Mandatory)": ["การช่วยฟื้นคืนชีพ (CPR/BLS/ACLS)", "การป้องกันและควบคุมการติดเชื้อ (IC)", "ความปลอดภัยของผู้ป่วย (Patient Safety / RM)", "ซ้อมแผนระงับอัคคีภัย / ภัยพิบัติ", "อื่นๆ - ความปลอดภัย"],
+  "ทักษะทางคลินิกพื้นฐาน (Core Skills)": ["การบริหารยาและสารน้ำ", "การประเมินอาการและติดตามผู้ป่วย", "การใช้อุปกรณ์ทางการแพทย์", "การพยาบาลทั่วไป", "อื่นๆ - ทักษะพื้นฐาน"],
+  "การพยาบาลเฉพาะทาง (Specialty)": ["อายุรกรรม / ศัลยกรรม", "ผู้ป่วยวิกฤต / ฉุกเฉิน (ICU/ER)", "การบำบัดทดแทนไต / CAPD", "สูติ-นรีเวช / กุมารเวชกรรม", "ออร์โธปิดิกส์", "Palliative Care", "อื่นๆ - เฉพาะทาง"],
+  "การบริหารงานพยาบาล (Management)": ["การบริหารจัดการหอผู้ป่วย", "การบริหารทรัพยากรบุคคล (HR)", "การจัดอัตรากำลัง / ภาระงาน", "การบริหารการเงิน / การคลัง", "อื่นๆ - การบริหาร"],
+  "การวิจัยและพัฒนาคุณภาพ (CQI)": ["การทำวิจัย / R2R", "การพัฒนาคุณภาพ (CQI) / นวัตกรรม", "การเตรียมรับการประเมิน (HA / Accreditation)", "อื่นๆ - พัฒนาคุณภาพ"],
+  "ระบบสารสนเทศและเทคโนโลยีดิจิทัล (IT)": ["ระบบข้อมูลโรงพยาบาล (HosXp / ENR)", "โปรแกรมประยุกต์ / Dashboard", "อื่นๆ - IT"],
+  "การประชุมและแลกเปลี่ยนเรียนรู้": ["ประชุมประจำเดือน / ประชุมหน่วยงาน", "ประชุมวิชาการ / Service Plan", "ประชุมเครือข่าย", "กิจกรรม 5ส / พัฒนาองค์กร", "อื่นๆ - การประชุม"],
+  "ภาวะผู้นำและทักษะการทำงาน (Soft Skills)": ["พฤติกรรมบริการ / การจัดการข้อร้องเรียน", "ภาวะผู้นำ / การทำงานเป็นทีม", "อื่นๆ - Soft Skills"],
+  "กฎหมายและจริยธรรมวิชาชีพ": ["กฎหมายทางการแพทย์และพยาบาล", "จริยธรรมและจรรยาบรรณวิชาชีพ", "สิทธิผู้ป่วยและข้อร้องเรียน", "อื่นๆ - กฎหมาย/จริยธรรม"],
+  "การปฐมนิเทศและพัฒนาบุคลากร": ["ปฐมนิเทศบุคลากรใหม่", "การเตรียมความพร้อมก่อนขึ้นเวร (Preceptor)", "ศึกษาต่อ / อบรมระยะยาว", "อื่นๆ - พัฒนาบุคลากร"],
+  "อื่นๆ (ระบุเอง)": []
+};
+const TRAINING_METHODS = ["Onsite (จัดในสถานที่)", "Online (ออนไลน์)", "Hybrid (ผสมผสาน)"];
+const KM_LOCATIONS = ["ห้องเรียนเมืองคนสวย", "อื่นๆ (ระบุเอง)"];
+const INPUT_CLASS = "w-full p-3 bg-white border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-400 focus:border-sky-500 outline-none text-sm transition-all shadow-sm hover:border-slate-400 text-slate-700";
+const MOCK_STAFF = [{
+  id: 'mock-1',
+  name: 'สมหญิง รักดี',
+  position: POSITIONS.NURSE,
+  department: 'ER',
+  targetHours: 60
+}, {
+  id: 'mock-2',
+  name: 'มาลี สุขใจ',
+  position: POSITIONS.PN,
+  department: 'ICU',
+  targetHours: 10
+}];
+
+// Helper Functions for Data Safety
+const safeStr = val => val != null ? String(val) : '';
+const safeLower = val => safeStr(val).toLowerCase();
+const safeTrim = val => safeStr(val).trim();
+
+// แก้ไขฟังก์ชันจัดการวันที่แบบใหม่ (แก้บั๊ก Timezone ถอยหลัง 1 วัน)
+const normalizeDate = rawDate => {
+  if (!rawDate) return '';
+  let str = String(rawDate);
+
+  // ถ้ามี Timezone ติดมาด้วย (เช่น T17:00:00.000Z) ให้แปลงเป็นเวลา Local (ไทย) ก่อนดึงข้อมูล
+  if (str.includes('T') && str.includes('Z')) {
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      str = `${yyyy}-${mm}-${dd}`;
+    }
+  } else {
+    str = str.split('T')[0]; // กรณีส่งมาเป็นแค่ YYYY-MM-DD
+  }
+
+  // จัดการแปลงปี พ.ศ. ให้เป็น ค.ศ.
+  const parts = str.split('-');
+  if (parts.length === 3) {
+    let y = parseInt(parts[0], 10);
+    if (isNaN(y)) return str;
+    if (y >= 2500 && y <= 2600) y = y - 543;else if (y >= 1950 && y <= 1999) y = 2500 + (y - 1900) - 543;else if (y >= 2030 && y <= 2099) y = 2500 + (y - 2000) - 543;
+    return `${y}-${parts[1]}-${parts[2]}`;
+  }
+  return str;
+};
+const formatDisplayDate = dateStr => {
+  if (!dateStr) return '-';
+  try {
+    const d = new Date(normalizeDate(dateStr));
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('th-TH');
+  } catch (e) {
+    return '-';
+  }
+};
+const getFiscalYear = dateString => {
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return '';
+  let year = d.getFullYear();
+  if (year < 2500) year += 543;
+  return d.getMonth() + 1 >= 10 ? (year + 1).toString() : year.toString();
+};
+function App() {
+  const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState('km');
+
+  // Data States
+  const [records, setRecords] = useState([]);
+  const [staffList, setStaffList] = useState([]);
+  const [kmQueues, setKmQueues] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Form States (ประวัติอบรม)
+  const [formData, setFormData] = useState({
+    id: '',
+    staffId: '',
+    staffName: '',
+    position: '',
+    department: '',
+    courseName: '',
+    startDate: '',
+    endDate: '',
+    hours: '',
+    host: '',
+    category: '',
+    subCategory: '',
+    fiscalYear: '',
+    createdAt: '',
+    knowledgeSummary: '',
+    documentUrl: '',
+    trainingMethod: TRAINING_METHODS[0],
+    projectPlan: '',
+    outcomes: '',
+    customCategory: '',
+    customSubCategory: ''
+  });
+  const [editingId, setEditingId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // KM States (จองคิว)
+  const [kmActiveSubTab, setKmActiveSubTab] = useState('schedule');
+  const [showKmModal, setShowKmModal] = useState(false);
+  const [kmSearchQuery, setKmSearchQuery] = useState('');
+  const [showKmStaffDropdown, setShowKmStaffDropdown] = useState(false);
+  const [kmFeedSearch, setKmFeedSearch] = useState('');
+  const [expandedKmId, setExpandedKmId] = useState(null);
+
+  // KM Calendar States
+  const [kmScheduleMonth, setKmScheduleMonth] = useState(new Date());
+  const _d = new Date();
+  const todayStr = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
+  const [kmSelectedDate, setKmSelectedDate] = useState(todayStr);
+  const [kmFormData, setKmFormData] = useState({
+    id: '',
+    date: todayStr,
+    topic: '',
+    staffId: '',
+    staffName: '',
+    location: KM_LOCATIONS[0],
+    customLocation: ''
+  });
+
+  // Filter & Pagination States
+  const [filterYear, setFilterYear] = useState('');
+  const [filterDept, setFilterDept] = useState('');
+  const [filterName, setFilterName] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 15;
+  const [filterCompletion, setFilterCompletion] = useState('all');
+  const [progFilterPos, setProgFilterPos] = useState('');
+  const [progFilterDept, setProgFilterDept] = useState('');
+
+  // Staff States
+  const [staffForm, setStaffForm] = useState({
+    id: '',
+    name: '',
+    position: POSITIONS.NURSE,
+    department: DEPARTMENTS[0],
+    status: STAFF_STATUS.ACTIVE
+  });
+  const [editingStaffId, setEditingStaffId] = useState(null);
+  const [staffSearchQuery, setStaffSearchQuery] = useState('');
+  const [staffStatusFilter, setStaffStatusFilter] = useState('all'); // all | ปฏิบัติงาน | ไม่ได้ปฏิบัติงาน
+
+  // Modals
+  const [modal, setModal] = useState({
+    show: false,
+    message: '',
+    type: 'alert',
+    onConfirm: null
+  });
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const showModal = (message, type = 'alert', onConfirm = null) => setModal({
+    show: true,
+    message,
+    type,
+    onConfirm
+  });
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    setUser({
+      uid: 'local-user'
+    }); // ไม่ใช้ Firebase แล้ว
+    return () => clearInterval(timer);
+  }, []);
+  const fetchFromGoogleSheet = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(SCRIPT_URL);
+      if (!response.ok) throw new Error("การเชื่อมต่อล้มเหลว Status: " + response.status);
+      const result = await response.json();
+      if (result.status === 'success') {
+        const safeStaff = Array.isArray(result.staff) ? result.staff : [];
+        const safeRecords = Array.isArray(result.records) ? result.records : [];
+        const safeKmQueues = Array.isArray(result.kmQueues) ? result.kmQueues : [];
+        setStaffList(safeStaff.map((s, idx) => ({
+          ...s,
+          id: s.id || `legacy-staff-${idx}`
+        })).sort((a, b) => safeStr(a.name).localeCompare(safeStr(b.name), 'th')));
+        setRecords(safeRecords.map((r, idx) => ({
+          ...r,
+          id: r.id || `legacy-rec-${idx}`
+        })).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)));
+        setKmQueues(safeKmQueues);
+        setIsOffline(false);
+      } else throw new Error(result.message);
+    } catch (error) {
+      console.warn("Offline mode activated due to fetch error:", error.message);
+      setIsOffline(true);
+      showModal(`เชื่อมต่อ Google Sheet ไม่สำเร็จ (Failed to fetch)\n\nโปรดตรวจสอบว่าตอน Deploy Apps Script ได้ตั้งค่า "ผู้มีสิทธิ์เข้าถึง (Who has access)" เป็น "ทุกคน (Anyone)" แล้วหรือไม่ครับ\n\n(ขณะนี้ระบบทำงานด้วยโหมดจำลองชั่วคราว)`, 'alert');
+      setStaffList([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const sendDataToSheet = async (action, data) => {
+    if (isOffline) {
+      setIsSaving(true);
+      await new Promise(r => setTimeout(r, 800));
+      if (action === 'addRecord') setRecords(prev => [{
+        ...data,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString()
+      }, ...prev]);
+      if (action === 'editRecord') setRecords(prev => prev.map(r => r.id === data.id ? {
+        ...r,
+        ...data
+      } : r));
+      if (action === 'deleteRecord') setRecords(prev => prev.filter(r => r.id !== data.id));
+      if (action === 'addStaff') setStaffList(prev => [{
+        ...data,
+        id: `staff-${Date.now()}`
+      }, ...prev]);
+      if (action === 'editStaff') setStaffList(prev => prev.map(s => s.id === data.id ? {
+        ...s,
+        ...data
+      } : s));
+      if (action === 'deleteStaff') setStaffList(prev => prev.filter(s => s.id !== data.id));
+      if (action === 'addKmQueue') setKmQueues(prev => [...prev, data]);
+      if (action === 'editKmQueue') setKmQueues(prev => prev.map(q => q.id === data.id ? {
+        ...q,
+        ...data
+      } : q));
+      if (action === 'deleteKmQueue') setKmQueues(prev => prev.filter(q => q.id !== data.id));
+      setIsSaving(false);
+      showModal("จำลองการทำงานสำเร็จ (โหมด Offline)", "activity");
+      return true;
+    }
+    setIsSaving(true);
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action,
+          data
+        }),
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        }
+      });
+      const result = await response.json();
+      if (result.status === 'success') {
+        await fetchFromGoogleSheet();
+        return true;
+      } else throw new Error(result.message);
+    } catch (error) {
+      console.warn("Save failed:", error.message);
+      showModal("บันทึกไม่สำเร็จ: " + error.message);
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  useEffect(() => {
+    if (user) fetchFromGoogleSheet();
+  }, [user]);
+  const handleStaffSelect = staff => {
+    setFormData(prev => ({
+      ...prev,
+      staffId: staff.id,
+      staffName: staff.name,
+      position: staff.position,
+      department: staff.department
+    }));
+    setSearchQuery(staff.name);
+    setShowDropdown(false);
+  };
+  const handleKmStaffSelect = staff => {
+    setKmFormData(prev => ({
+      ...prev,
+      staffId: staff.id,
+      staffName: staff.name
+    }));
+    setKmSearchQuery(staff.name);
+    setShowKmStaffDropdown(false);
+  };
+  const handleSearchChange = e => {
+    setSearchQuery(e.target.value);
+    setFormData(prev => ({
+      ...prev,
+      staffName: e.target.value
+    }));
+    setShowDropdown(true);
+    if (e.target.value === '') setFormData(prev => ({
+      ...prev,
+      staffId: '',
+      staffName: '',
+      position: '',
+      department: ''
+    }));
+  };
+  const handleInputChange = e => {
+    const {
+      name,
+      value
+    } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    if (name === 'category') {
+      setFormData(prev => ({
+        ...prev,
+        category: value,
+        subCategory: '',
+        customCategory: '',
+        customSubCategory: ''
+      }));
+    }
+  };
+  const calculateSuggestedHours = () => setFormData(prev => ({
+    ...prev,
+    hours: '7'
+  }));
+  const handleSubmit = async e => {
+    e.preventDefault();
+    if (!formData.staffName || !formData.courseName || !formData.hours || !formData.startDate) {
+      showModal("กรุณาระบุข้อมูลบุคลากร, ชื่อหลักสูตร, วันที่เริ่มต้น และชั่วโมงให้ครบถ้วน");
+      return;
+    }
+    const sanitizedStart = normalizeDate(formData.startDate);
+    const fiscalYear = getFiscalYear(sanitizedStart);
+    const finalCategory = formData.category === 'อื่นๆ (ระบุเอง)' ? formData.customCategory || 'อื่นๆ' : formData.category;
+    const finalSubCategory = formData.category === 'อื่นๆ (ระบุเอง)' ? formData.customSubCategory || '' : formData.subCategory;
+    const payload = {
+      ...formData,
+      category: finalCategory,
+      subCategory: finalSubCategory,
+      startDate: sanitizedStart,
+      endDate: normalizeDate(formData.endDate),
+      hours: parseFloat(formData.hours),
+      fiscalYear
+    };
+    if (!payload.staffId) {
+      const matched = staffList.find(s => s.name === payload.staffName);
+      if (matched) payload.staffId = matched.id;
+    }
+    let success = false;
+    let isLegacyEdit = false;
+    if (editingId && !safeStr(editingId).includes('legacy')) {
+      payload.id = editingId;
+      success = await sendDataToSheet('editRecord', payload);
+    } else {
+      success = await sendDataToSheet('addRecord', payload);
+      if (editingId && safeStr(editingId).includes('legacy')) isLegacyEdit = true;
+    }
+    if (success) {
+      resetForm();
+      if (safeTrim(payload.knowledgeSummary) || safeTrim(payload.outcomes) || safeTrim(payload.documentUrl)) {
+        setActiveTab('km');
+        setKmActiveSubTab('feed');
+      } else setActiveTab('records');
+      if (isLegacyEdit) showModal("บันทึกเป็นประวัติใหม่เรียบร้อยแล้ว เนื่องจากประวัติเดิมไม่มีรหัสอ้างอิง\n\nกรุณาเข้าไปลบบรรทัดเก่าใน Google Sheet ด้วยนะครับ", "alert");
+    }
+  };
+  const handleKmQueueSubmit = async e => {
+    e.preventDefault();
+    const currentStaffName = kmFormData.staffName || kmSearchQuery;
+    if (!kmFormData.date || !kmFormData.topic || !currentStaffName) {
+      showModal("กรุณากรอกข้อมูลให้ครบถ้วน (วันที่, หัวข้อ และ ผู้บรรยาย)", "alert");
+      return;
+    }
+    const countOnDate = kmQueues.filter(q => normalizeDate(q.date) === normalizeDate(kmFormData.date) && q.id !== kmFormData.id).length;
+    if (countOnDate >= 3) {
+      showModal("คิวแชร์ความรู้วันนี้เต็มแล้วครับ (รับจำกัด 3 เรื่อง/วัน) 😅\nกรุณาเลือกวันพฤหัสบดีถัดไปครับ", "alert");
+      return;
+    }
+    const finalLoc = kmFormData.location === 'อื่นๆ (ระบุเอง)' ? kmFormData.customLocation : kmFormData.location;
+    const payload = {
+      ...kmFormData,
+      date: normalizeDate(kmFormData.date),
+      staffName: currentStaffName,
+      location: finalLoc || 'ไม่ระบุสถานที่',
+      id: kmFormData.id || `KMQ-${Date.now()}`,
+      createdAt: kmFormData.id ? kmFormData.createdAt : new Date().toISOString()
+    };
+    if (!payload.staffId) {
+      const matched = staffList.find(s => s.name === payload.staffName);
+      if (matched) payload.staffId = matched.id;
+    }
+    const success = await sendDataToSheet(kmFormData.id ? 'editKmQueue' : 'addKmQueue', payload);
+    if (success) {
+      setShowKmModal(false);
+      setKmFormData({
+        id: '',
+        date: kmSelectedDate,
+        topic: '',
+        staffId: '',
+        staffName: '',
+        location: KM_LOCATIONS[0],
+        customLocation: ''
+      });
+      setKmSearchQuery('');
+    }
+  };
+  const handleEditKmQueue = queue => {
+    const isCustomLoc = !KM_LOCATIONS.includes(queue.location);
+    setKmFormData({
+      ...queue,
+      date: normalizeDate(queue.date),
+      location: isCustomLoc ? 'อื่นๆ (ระบุเอง)' : queue.location,
+      customLocation: isCustomLoc ? queue.location : ''
+    });
+    setKmSearchQuery(queue.staffName);
+    setShowKmModal(true);
+  };
+  const handleDeleteKmQueue = id => showModal("ยกเลิกและลบคิวแชร์ความรู้นี้?", 'confirm', async () => await sendDataToSheet('deleteKmQueue', {
+    id
+  }));
+  const handleEdit = record => {
+    let currentStaffId = record.staffId;
+    if (!currentStaffId) {
+      const matched = staffList.find(s => s.name === record.staffName);
+      if (matched) currentStaffId = matched.id;
+    }
+    const isCustomCat = record.category && !Object.keys(CATEGORIES).includes(record.category);
+    setFormData({
+      id: record.id || '',
+      staffId: currentStaffId || '',
+      staffName: record.staffName || '',
+      position: record.position || '',
+      department: record.department || '',
+      courseName: record.courseName || '',
+      startDate: normalizeDate(record.startDate),
+      endDate: normalizeDate(record.endDate),
+      hours: record.hours ? record.hours.toString() : '',
+      host: record.host || '',
+      category: isCustomCat ? 'อื่นๆ (ระบุเอง)' : record.category || '',
+      subCategory: isCustomCat ? '' : record.subCategory || '',
+      fiscalYear: record.fiscalYear || '',
+      createdAt: record.createdAt || '',
+      knowledgeSummary: record.knowledgeSummary || '',
+      documentUrl: record.documentUrl || '',
+      trainingMethod: record.trainingMethod || TRAINING_METHODS[0],
+      projectPlan: record.projectPlan || '',
+      outcomes: record.outcomes || '',
+      customCategory: isCustomCat ? record.category : '',
+      customSubCategory: isCustomCat ? record.subCategory : ''
+    });
+    setSearchQuery(record.staffName || '');
+    setEditingId(record.id);
+    setActiveTab('form');
+  };
+  const resetForm = () => {
+    setFormData({
+      id: '',
+      staffId: '',
+      staffName: '',
+      position: '',
+      department: '',
+      courseName: '',
+      startDate: '',
+      endDate: '',
+      hours: '',
+      host: '',
+      category: '',
+      subCategory: '',
+      fiscalYear: '',
+      createdAt: '',
+      knowledgeSummary: '',
+      documentUrl: '',
+      trainingMethod: TRAINING_METHODS[0],
+      projectPlan: '',
+      outcomes: '',
+      customCategory: '',
+      customSubCategory: ''
+    });
+    setSearchQuery('');
+    setEditingId(null);
+  };
+  const handleDelete = id => {
+    if (safeStr(id).includes('legacy')) {
+      showModal("ไม่สามารถลบข้อมูลเก่าจากหน้าเว็บได้โดยตรง กรุณาลบข้อมูลนี้ใน Google Sheet แทนครับ", "alert");
+      return;
+    }
+    showModal(isOffline ? "ลบประวัติการอบรมนี้? (Offline Mode)" : "ลบประวัติการอบรมนี้? ข้อมูลจะถูกลบออกจาก Google Sheet ถาวร", 'confirm', async () => await sendDataToSheet('deleteRecord', {
+      id
+    }));
+  };
+  const handleStaffSubmit = async e => {
+    e.preventDefault();
+    if (!staffForm.name) return;
+    const payload = {
+      ...staffForm,
+      status: staffForm.status || STAFF_STATUS.ACTIVE,
+      targetHours: TARGET_HOURS[staffForm.position]
+    };
+    let success = false;
+    let isLegacyEdit = false;
+    if (editingStaffId && !safeStr(editingStaffId).includes('legacy')) {
+      payload.id = editingStaffId;
+      success = await sendDataToSheet('editStaff', payload);
+    } else {
+      payload.id = `S-${Date.now()}`;
+      success = await sendDataToSheet('addStaff', payload);
+      if (editingStaffId && safeStr(editingStaffId).includes('legacy')) isLegacyEdit = true;
+    }
+    if (success) {
+      setStaffForm({
+        id: '',
+        name: '',
+        position: POSITIONS.NURSE,
+        department: DEPARTMENTS[0],
+        status: STAFF_STATUS.ACTIVE
+      });
+      setEditingStaffId(null);
+      if (isLegacyEdit) showModal("บันทึกเป็นรายชื่อใหม่เรียบร้อยแล้ว เนื่องจากข้อมูลเดิมไม่มีรหัสอ้างอิง\n\nกรุณาเข้าไปลบรายชื่อเก่าใน Google Sheet ด้วยครับ", "alert");
+    }
+  };
+  const handleEditStaff = staff => {
+    setStaffForm({
+      name: staff.name,
+      position: staff.position,
+      department: staff.department,
+      status: staff.status || STAFF_STATUS.ACTIVE
+    });
+    setEditingStaffId(staff.id);
+  };
+  const handleDeleteStaff = id => {
+    if (safeStr(id).includes('legacy')) {
+      showModal("ไม่สามารถลบรายชื่อเก่าจากหน้าเว็บได้โดยตรง กรุณาลบข้อมูลนี้ใน Google Sheet แทนครับ", "alert");
+      return;
+    }
+    showModal("ยืนยันการลบบุคลากรนี้? (ประวัติของบุคลากรนี้จะยังคงอยู่ในชีต)", 'confirm', async () => await sendDataToSheet('deleteStaff', {
+      id
+    }));
+  };
+  const availableYears = useMemo(() => Array.from(new Set(records.map(r => r.fiscalYear ? String(r.fiscalYear) : '').filter(Boolean))).sort((a, b) => b - a), [records]);
+  useEffect(() => {
+    if (!filterYear && availableYears.length > 0) setFilterYear(availableYears[0]);
+  }, [availableYears, filterYear]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterYear, filterDept, filterName]);
+  const filteredRecords = useMemo(() => records.filter(r => (filterYear ? String(r.fiscalYear) === String(filterYear) : true) && (filterDept ? r.department === filterDept : true) && (filterName ? safeLower(r.staffName).includes(safeLower(filterName)) : true)), [records, filterYear, filterDept, filterName]);
+  const kmFeedRecords = useMemo(() => {
+    let baseKm = records.filter(r => safeTrim(r.knowledgeSummary) !== '' || safeTrim(r.documentUrl) !== '' || safeTrim(r.outcomes) !== '' || safeTrim(r.projectPlan) !== '');
+    if (kmFeedSearch) {
+      const q = safeLower(kmFeedSearch);
+      baseKm = baseKm.filter(r => safeLower(r.courseName).includes(q) || safeLower(r.knowledgeSummary).includes(q) || safeLower(r.outcomes).includes(q) || safeLower(r.staffName).includes(q) || safeLower(r.projectPlan).includes(q));
+    }
+    return baseKm.sort((a, b) => new Date(normalizeDate(b.startDate) || b.createdAt || 0) - new Date(normalizeDate(a.startDate) || a.createdAt || 0));
+  }, [records, kmFeedSearch]);
+  const toggleKmExpand = id => setExpandedKmId(prev => prev === id ? null : id);
+
+  // --- KM Calendar Logic ---
+  const prevMonth = () => setKmScheduleMonth(new Date(kmScheduleMonth.getFullYear(), kmScheduleMonth.getMonth() - 1, 1));
+  const nextMonth = () => setKmScheduleMonth(new Date(kmScheduleMonth.getFullYear(), kmScheduleMonth.getMonth() + 1, 1));
+  const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+  const yearTh = kmScheduleMonth.getFullYear() + 543;
+  const monthTh = monthNames[kmScheduleMonth.getMonth()];
+  const daysInMonth = new Date(kmScheduleMonth.getFullYear(), kmScheduleMonth.getMonth() + 1, 0).getDate();
+  const firstDay = new Date(kmScheduleMonth.getFullYear(), kmScheduleMonth.getMonth(), 1).getDay();
+  const calendarCells = [];
+  for (let i = 0; i < firstDay; i++) calendarCells.push(null);
+  for (let i = 1; i <= daysInMonth; i++) {
+    const yyyy = kmScheduleMonth.getFullYear();
+    const mm = String(kmScheduleMonth.getMonth() + 1).padStart(2, '0');
+    const dd = String(i).padStart(2, '0');
+    calendarCells.push(`${yyyy}-${mm}-${dd}`);
+  }
+  const kmByDate = useMemo(() => {
+    return kmQueues.reduce((acc, q) => {
+      let dStr = normalizeDate(q.date);
+      if (!acc[dStr]) acc[dStr] = [];
+      acc[dStr].push(q);
+      return acc;
+    }, {});
+  }, [kmQueues]);
+  const groupedKmQueues = useMemo(() => {
+    const groups = kmQueues.reduce((acc, q) => {
+      let dStr = normalizeDate(q.date);
+      if (!acc[dStr]) acc[dStr] = [];
+      acc[dStr].push(q);
+      return acc;
+    }, {});
+    return Object.keys(groups).sort((a, b) => new Date(a) - new Date(b)).map(date => ({
+      date,
+      items: groups[date]
+    }));
+  }, [kmQueues]);
+
+  // --- Dashboard Logic ---
+  // นับเฉพาะเจ้าหน้าที่ที่สถานะ "ปฏิบัติงาน" (คนที่ไม่ได้ปฏิบัติงาน ไม่นับในสถิติ)
+  const isActiveStaff = s => !s.status || s.status === STAFF_STATUS.ACTIVE;
+  const dashboardStats = useMemo(() => {
+    let staffBase = staffList.filter(s => isActiveStaff(s) && (filterDept ? s.department === filterDept : true) && (filterName ? safeLower(s.name).includes(safeLower(filterName)) : true));
+    const stats = {};
+    staffBase.forEach(s => {
+      stats[s.id] = {
+        ...s,
+        totalHours: 0,
+        targetHours: parseFloat(s.targetHours) || TARGET_HOURS[s.position] || 10,
+        recordsCount: 0
+      };
+    });
+    filteredRecords.forEach(r => {
+      let target = stats[r.staffId] || Object.values(stats).find(s => safeTrim(s.name) === safeTrim(r.staffName));
+      if (target) {
+        target.totalHours += parseFloat(r.hours) || 0;
+        target.recordsCount += 1;
+      }
+    });
+    // ปัดเป็นจำนวนเต็ม
+    return Object.values(stats).map(s => ({
+      ...s,
+      totalHours: Math.round(s.totalHours)
+    })).sort((a, b) => b.totalHours - a.totalHours);
+  }, [staffList, filteredRecords, filterDept, filterName]);
+  const completionStats = useMemo(() => {
+    const s = {
+      total: {
+        passed: 0,
+        all: 0
+      },
+      [POSITIONS.NURSE]: {
+        passed: 0,
+        all: 0
+      },
+      [POSITIONS.PN]: {
+        passed: 0,
+        all: 0
+      },
+      [POSITIONS.ORDERLY]: {
+        passed: 0,
+        all: 0
+      }
+    };
+    dashboardStats.forEach(stat => {
+      s.total.all++;
+      if (s[stat.position]) s[stat.position].all++;
+      if (stat.totalHours >= stat.targetHours) {
+        s.total.passed++;
+        if (s[stat.position]) s[stat.position].passed++;
+      }
+    });
+    return s;
+  }, [dashboardStats]);
+  const displayedDashboardStats = useMemo(() => dashboardStats.filter(s => (filterCompletion === 'passed' ? s.totalHours >= s.targetHours : filterCompletion === 'failed' ? s.totalHours < s.targetHours : true) && (progFilterPos ? s.position === progFilterPos : true) && (progFilterDept ? s.department === progFilterDept : true)), [dashboardStats, filterCompletion, progFilterPos, progFilterDept]);
+  const categoryStats = useMemo(() => {
+    const s = {};
+    filteredRecords.forEach(r => {
+      const c = r.category || 'ไม่ระบุ';
+      s[c] = (s[c] || 0) + (parseFloat(r.hours) || 0);
+    });
+    return Object.entries(s).map(([cat, hours]) => [cat, Math.round(hours)]).sort((a, b) => b[1] - a[1]);
+  }, [filteredRecords]);
+  const yearlyTrend = useMemo(() => {
+    const s = {};
+    records.filter(r => filterDept ? r.department === filterDept : true).forEach(r => {
+      if (r.fiscalYear) {
+        s[r.fiscalYear] = (s[r.fiscalYear] || 0) + (parseFloat(r.hours) || 0);
+      }
+    });
+    return Object.keys(s).sort((a, b) => b - a).slice(0, 3).reverse().map(y => ({
+      year: y,
+      hours: Math.round(s[y])
+    }));
+  }, [records, filterDept]);
+  const handleExportCSV = () => {
+    if (filteredRecords.length === 0) {
+      showModal("ไม่มีข้อมูลสำหรับดาวน์โหลด");
+      return;
+    }
+    const headers = ["ปีงบประมาณ", "ชื่อ-สกุล", "ตำแหน่ง", "หน่วยงาน", "ชื่อหลักสูตร", "รูปแบบ", "วันที่เริ่ม", "วันที่สิ้นสุด", "ชั่วโมง", "หมวดหมู่หลัก", "ผู้จัด", "แผนงาน/โครงการ", "ผลลัพธ์"];
+    const csvContent = [headers.join(","), ...filteredRecords.map(r => `"${r.fiscalYear || ''}","${safeStr(r.staffName)}","${safeStr(r.position)}","${safeStr(r.department)}","${safeStr(r.courseName)}","${safeStr(r.trainingMethod)}","${r.startDate ? normalizeDate(r.startDate) : ''}","${r.endDate ? normalizeDate(r.endDate) : ''}","${r.hours || 0}","${safeStr(r.category)}","${safeStr(r.host)}","${safeStr(r.projectPlan).replace(/"/g, '""')}","${safeStr(r.outcomes).replace(/"/g, '""')}"`)].join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], {
+      type: 'text/csv;charset=utf-8;'
+    });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `ประวัติอบรมพยาบาล_${filterDept || 'ทั้งหมด'}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  // ค้นหารายชื่อสำหรับฟอร์ม — แสดงเฉพาะคนที่ยังปฏิบัติงาน
+  const searchFilteredStaff = staffList.filter(s => isActiveStaff(s) && safeLower(s.name).includes(safeLower(searchQuery)));
+  const searchKmStaff = staffList.filter(s => isActiveStaff(s) && safeLower(s.name).includes(safeLower(kmSearchQuery)));
+  const displayedStaffList = useMemo(() => {
+    let list = staffList;
+    if (staffStatusFilter !== 'all') {
+      list = list.filter(s => (s.status || STAFF_STATUS.ACTIVE) === staffStatusFilter);
+    }
+    if (staffSearchQuery) {
+      list = list.filter(s => safeLower(s.name).includes(safeLower(staffSearchQuery)) || safeLower(s.department).includes(safeLower(staffSearchQuery)));
+    }
+    return list;
+  }, [staffList, staffSearchQuery, staffStatusFilter]);
+  const formatThaiDate = date => date.toLocaleDateString('th-TH', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  const formatTime = date => date.toLocaleTimeString('th-TH', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = filteredRecords.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(filteredRecords.length / recordsPerPage);
+  const getRelativeTimeString = dateStr => {
+    if (!dateStr) return '';
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return '-';
+      return formatThaiDate(date);
+    } catch (e) {
+      return '-';
+    }
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen bg-sky-50 text-slate-800 selection:bg-sky-200 font-sans pb-12 relative overflow-x-hidden"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowHelpModal(true),
+    className: "fixed bottom-6 right-6 bg-blue-900 text-white p-3.5 rounded-full shadow-2xl hover:bg-blue-950 transition-all z-40 flex items-center justify-center hover:scale-105",
+    title: "คู่มือการใช้งาน"
+  }, /*#__PURE__*/React.createElement(HelpCircle, {
+    size: 28
+  })), showHelpModal && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl shadow-2xl max-w-2xl w-full border border-sky-100 overflow-hidden flex flex-col max-h-[90vh]"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-blue-900 to-blue-800 p-6 flex justify-between items-center text-white"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-xl font-bold flex items-center"
+  }, /*#__PURE__*/React.createElement(BookOpen, {
+    className: "mr-3",
+    size: 24
+  }), " คู่มือและวิธีการใช้งานระบบ"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowHelpModal(false),
+    className: "text-blue-200 hover:text-white bg-blue-800/50 p-2 rounded-full transition-colors"
+  }, /*#__PURE__*/React.createElement(XCircle, {
+    size: 20
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "p-8 overflow-y-auto space-y-6 text-slate-700 text-sm leading-relaxed"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+    className: "text-base font-bold text-blue-900 flex items-center mb-2"
+  }, /*#__PURE__*/React.createElement(Info, {
+    className: "mr-2 text-sky-500",
+    size: 18
+  }), " วัตถุประสงค์ของระบบ"), /*#__PURE__*/React.createElement("p", {
+    className: "bg-sky-50 p-4 rounded-xl border border-sky-100"
+  }, "เพื่อให้บุคลากรทางการพยาบาลสามารถบันทึกและตรวจสอบชั่วโมงการอบรม รวมถึงจองคิวแลกเปลี่ยนความรู้ (KM) ได้อย่างเป็นระบบ")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+    className: "text-base font-bold text-blue-900 flex items-center mb-2"
+  }, /*#__PURE__*/React.createElement(Clock, {
+    className: "mr-2 text-sky-500",
+    size: 18
+  }), " หลักเกณฑ์การนับชั่วโมงการอบรม"), /*#__PURE__*/React.createElement("ul", {
+    className: "list-disc list-inside space-y-2 ml-2 bg-slate-50 p-4 rounded-xl border border-slate-100"
+  }, /*#__PURE__*/React.createElement("li", null, "การอบรมเต็มวัน ให้นับเป็น ", /*#__PURE__*/React.createElement("strong", null, "7 ชั่วโมง")), /*#__PURE__*/React.createElement("li", null, "หากมีเศษของชั่วโมง ", /*#__PURE__*/React.createElement("strong", null, "ถ้าเกิน 30 นาที ให้ปัดขึ้นเป็น 1 ชั่วโมง"))))), /*#__PURE__*/React.createElement("div", {
+    className: "p-6 bg-slate-50 border-t border-slate-100 text-right"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowHelpModal(false),
+    className: "px-6 py-2.5 bg-blue-900 text-white rounded-xl hover:bg-blue-950 font-bold transition shadow-md shadow-blue-900/20"
+  }, "รับทราบและปิดหน้าต่าง")))), isOffline && /*#__PURE__*/React.createElement("div", {
+    className: "bg-amber-500 text-white text-center py-2 px-4 text-sm font-medium shadow-md flex items-center justify-center"
+  }, /*#__PURE__*/React.createElement(AlertCircle, {
+    size: 16,
+    className: "mr-2"
+  }), " ระบบทำงานในโหมดจำลอง (Offline)"), modal.show && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border border-sky-100"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center mb-4"
+  }, modal.type === 'confirm' ? /*#__PURE__*/React.createElement(AlertCircle, {
+    className: "text-amber-500 mr-2",
+    size: 24
+  }) : /*#__PURE__*/React.createElement(Activity, {
+    className: "text-blue-900 mr-2",
+    size: 24
+  }), /*#__PURE__*/React.createElement("h3", {
+    className: "text-xl font-bold text-slate-800"
+  }, modal.type === 'confirm' ? 'ยืนยันการดำเนินการ' : 'แจ้งเตือน')), /*#__PURE__*/React.createElement("p", {
+    className: "text-slate-600 mb-8 whitespace-pre-wrap text-sm leading-relaxed"
+  }, modal.message), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-3 justify-end"
+  }, modal.type === 'confirm' && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setModal({
+      show: false,
+      message: '',
+      type: 'alert',
+      onConfirm: null
+    }),
+    className: "px-5 py-2.5 bg-sky-50 text-blue-800 rounded-xl hover:bg-sky-100 font-medium transition"
+  }, "ยกเลิก"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      if (modal.onConfirm) modal.onConfirm();
+      setModal({
+        show: false,
+        message: '',
+        type: 'alert',
+        onConfirm: null
+      });
+    },
+    className: "px-5 py-2.5 bg-blue-900 text-white rounded-xl hover:bg-blue-950 font-medium transition shadow-md shadow-blue-900/30"
+  }, "ตกลง")))), isSaving && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 bg-white/60 backdrop-blur-sm z-[90] flex flex-col items-center justify-center p-4"
+  }, /*#__PURE__*/React.createElement(Loader2, {
+    size: 48,
+    className: "text-blue-900 animate-spin mb-4"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "text-lg font-bold text-slate-700 bg-white px-6 py-2 rounded-full shadow-md border border-sky-100"
+  }, isOffline ? 'กำลังจำลองการบันทึก...' : 'กำลังบันทึก...')), /*#__PURE__*/React.createElement("header", {
+    className: "glass-header sticky top-0 z-50 transition-all"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center space-x-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white/20 p-2.5 rounded-xl shadow-inner text-white backdrop-blur-sm border border-white/30"
+  }, /*#__PURE__*/React.createElement(Activity, {
+    size: 24,
+    strokeWidth: 2.5
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
+    className: "text-xl md:text-2xl font-bold tracking-tight leading-tight drop-shadow-md"
+  }, "ระบบฐานข้อมูลการฝึกอบรมบุคลากร"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-medium text-sky-100 drop-shadow"
+  }, "กลุ่มการพยาบาล โรงพยาบาลโพธาราม"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-4"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: fetchFromGoogleSheet,
+    disabled: loading,
+    className: "hidden sm:flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white py-1.5 px-3 rounded-lg backdrop-blur-sm border border-white/20 transition-all text-sm font-medium disabled:opacity-50"
+  }, /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 16,
+    className: loading ? "animate-spin" : ""
+  }), " ซิงค์ข้อมูล"), /*#__PURE__*/React.createElement("div", {
+    className: "hidden md:flex flex-col items-end text-right"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-medium text-sky-100 flex items-center"
+  }, /*#__PURE__*/React.createElement(Calendar, {
+    size: 14,
+    className: "mr-1.5"
+  }), " ", formatThaiDate(currentTime)), /*#__PURE__*/React.createElement("div", {
+    className: "text-lg font-bold flex items-center tracking-wide"
+  }, /*#__PURE__*/React.createElement(Clock, {
+    size: 16,
+    className: "mr-1.5 text-white"
+  }), " ", formatTime(currentTime), " ", /*#__PURE__*/React.createElement("span", {
+    className: "text-xs ml-1 text-sky-100/80"
+  }, "น.")))))), /*#__PURE__*/React.createElement("main", {
+    className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-full overflow-x-auto hide-scrollbar mb-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex p-1.5 bg-white rounded-xl border border-sky-100 card-shadow max-w-5xl mx-auto min-w-max"
+  }, [{
+    id: 'km',
+    icon: Share2,
+    label: 'ลานแลกเปลี่ยนความรู้'
+  }, {
+    id: 'form',
+    icon: Plus,
+    label: 'บันทึกประวัติ'
+  }, {
+    id: 'records',
+    icon: FileText,
+    label: 'ข้อมูลการอบรม'
+  }, {
+    id: 'dashboard',
+    icon: BarChart2,
+    label: 'รายงาน & ภาพรวม'
+  }, {
+    id: 'staff',
+    icon: Users,
+    label: 'ฐานข้อมูลบุคลากร'
+  }].map((tab, idx) => /*#__PURE__*/React.createElement("button", {
+    key: `nav-${tab.id}-${idx}`,
+    onClick: () => setActiveTab(tab.id),
+    className: `flex-1 flex items-center justify-center py-3 px-4 rounded-lg font-semibold text-sm transition-all duration-200 whitespace-nowrap
+                            ${activeTab === tab.id ? 'bg-blue-900 text-white shadow-md shadow-blue-900/20' : 'text-slate-500 hover:text-blue-900 hover:bg-sky-50'}`
+  }, /*#__PURE__*/React.createElement(tab.icon, {
+    size: 18,
+    className: `mr-2 flex-shrink-0 ${activeTab === tab.id ? 'text-white' : ''}`
+  }), /*#__PURE__*/React.createElement("span", null, tab.label))))), loading ? /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col justify-center items-center h-64"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-10 h-10 border-4 border-sky-200 border-t-blue-900 rounded-full animate-spin mb-4"
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "text-blue-900 font-medium"
+  }, "กำลังโหลดข้อมูลจาก Google Sheet...")) : /*#__PURE__*/React.createElement("div", {
+    className: "animate-fade"
+  }, activeTab === 'km' && /*#__PURE__*/React.createElement("div", {
+    className: "max-w-5xl mx-auto space-y-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-gradient-to-r from-blue-900 to-sky-700 rounded-3xl p-6 text-white shadow-md relative overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "absolute right-0 top-0 opacity-10 transform translate-x-1/4 -translate-y-1/4"
+  }, /*#__PURE__*/React.createElement(Lightbulb, {
+    size: 150
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl md:text-3xl font-black mb-2 flex items-center"
+  }, /*#__PURE__*/React.createElement(Share2, {
+    className: "mr-3",
+    size: 28
+  }), " ลานแลกเปลี่ยนความรู้ (KM)"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sky-100 text-sm max-w-xl"
+  }, "พื้นที่แบ่งปันประสบการณ์ และปฏิทินนัดหมายการจัดกิจกรรม KM ประจำสัปดาห์ (จำกัดวันละ 3 เรื่อง)")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setKmFormData({
+        id: '',
+        date: kmSelectedDate,
+        topic: '',
+        staffId: '',
+        staffName: '',
+        location: KM_LOCATIONS[0],
+        customLocation: ''
+      });
+      setShowKmModal(true);
+    },
+    className: "px-6 py-3 bg-white text-blue-900 font-black rounded-xl shadow-lg hover:scale-105 transition-transform flex items-center flex-shrink-0"
+  }, /*#__PURE__*/React.createElement(Plus, {
+    size: 20,
+    className: "mr-2"
+  }), " จองคิวแชร์ความรู้"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex bg-slate-200/50 p-1.5 rounded-xl max-w-sm"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setKmActiveSubTab('schedule'),
+    className: `flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center ${kmActiveSubTab === 'schedule' ? 'bg-white text-blue-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`
+  }, /*#__PURE__*/React.createElement(CalendarCheck, {
+    size: 16,
+    className: "mr-2"
+  }), " ปฏิทินคิว KM"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setKmActiveSubTab('feed'),
+    className: `flex-1 py-2.5 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center ${kmActiveSubTab === 'feed' ? 'bg-white text-blue-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`
+  }, /*#__PURE__*/React.createElement(BookOpen, {
+    size: 16,
+    className: "mr-2"
+  }), " คลังความรู้")), kmActiveSubTab === 'schedule' && /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 lg:grid-cols-3 gap-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "lg:col-span-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl p-6 shadow-sm border border-sky-100 card-shadow sticky top-24"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex justify-between items-center mb-6"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: prevMonth,
+    className: "p-2 hover:bg-sky-50 rounded-full text-slate-500 hover:text-blue-600 transition-colors"
+  }, /*#__PURE__*/React.createElement(ChevronLeft, {
+    size: 20
+  })), /*#__PURE__*/React.createElement("h3", {
+    className: "text-base font-bold text-blue-900"
+  }, monthTh, " ", yearTh), /*#__PURE__*/React.createElement("button", {
+    onClick: nextMonth,
+    className: "p-2 hover:bg-sky-50 rounded-full text-slate-500 hover:text-blue-600 transition-colors"
+  }, /*#__PURE__*/React.createElement(ChevronRight, {
+    size: 20
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-7 gap-1 text-center mb-3"
+  }, ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'].map(d => /*#__PURE__*/React.createElement("div", {
+    key: d,
+    className: "text-[11px] font-bold text-slate-400"
+  }, d))), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-7 gap-1.5"
+  }, calendarCells.map((dateStr, idx) => {
+    if (!dateStr) return /*#__PURE__*/React.createElement("div", {
+      key: `empty-${idx}`,
+      className: "h-10"
+    });
+    const dayNum = parseInt(dateStr.split('-')[2], 10);
+    const isSelected = dateStr === kmSelectedDate;
+    const isToday = dateStr === todayStr;
+    const isThursday = new Date(dateStr).getDay() === 4;
+    const items = kmByDate[dateStr] || [];
+    return /*#__PURE__*/React.createElement("button", {
+      key: dateStr,
+      onClick: () => setKmSelectedDate(dateStr),
+      className: `h-10 sm:h-12 rounded-xl flex flex-col items-center justify-center relative transition-all border 
+                                                            ${isSelected ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' : 'border-transparent hover:border-blue-200 hover:bg-slate-50'}
+                                                            ${isThursday && !isSelected ? 'bg-amber-50/40 text-amber-900' : ''}
+                                                        `
+    }, /*#__PURE__*/React.createElement("span", {
+      className: `text-xs font-bold z-10 ${isSelected ? 'text-blue-700' : isToday ? 'text-emerald-600' : 'text-slate-700'}`
+    }, dayNum), items.length > 0 && /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-0.5 mt-0.5 z-10"
+    }, items.map((_, i) => /*#__PURE__*/React.createElement("div", {
+      key: i,
+      className: `w-1.5 h-1.5 rounded-full ${items.length >= 3 ? 'bg-rose-500' : 'bg-blue-500'}`
+    }))), isToday && !isSelected && /*#__PURE__*/React.createElement("div", {
+      className: "absolute inset-0 border border-emerald-300 rounded-xl pointer-events-none"
+    }));
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "lg:col-span-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl border border-sky-100 shadow-sm overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-sky-50 px-6 py-5 border-b border-sky-100 flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-base font-bold text-blue-900 flex items-center"
+  }, /*#__PURE__*/React.createElement(CalendarCheck, {
+    size: 18,
+    className: "mr-2 text-sky-500"
+  }), "คิววัน", new Date(kmSelectedDate).toLocaleDateString('th-TH', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })), /*#__PURE__*/React.createElement("span", {
+    className: `px-3 py-1 rounded-full text-xs font-bold ${(kmByDate[kmSelectedDate]?.length || 0) >= 3 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`
+  }, "จองแล้ว ", kmByDate[kmSelectedDate]?.length || 0, " / 3 เรื่อง")), /*#__PURE__*/React.createElement("div", {
+    className: "p-6 space-y-4 min-h-[300px]"
+  }, !kmByDate[kmSelectedDate] || kmByDate[kmSelectedDate].length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "text-center py-12 text-slate-400 bg-slate-50 rounded-2xl border border-slate-100 border-dashed"
+  }, /*#__PURE__*/React.createElement(Calendar, {
+    size: 48,
+    className: "mx-auto mb-4 text-slate-300"
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "font-bold text-slate-500"
+  }, "ไม่มีนัดหมายในวันนี้"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm mt-1"
+  }, "คลิกปุ่ม \"จองคิวแชร์ความรู้\" ด้านบนเพื่อลงคิวได้เลยครับ")) : kmByDate[kmSelectedDate].map((item, idx) => /*#__PURE__*/React.createElement("div", {
+    key: `km-itm-${item.id}`,
+    className: "p-5 flex flex-col sm:flex-row gap-5 hover:bg-slate-50 transition-colors group bg-white border border-slate-100 rounded-2xl shadow-sm"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex-shrink-0 flex flex-col items-center justify-center bg-blue-50 w-16 h-16 rounded-2xl text-blue-800 font-bold border border-blue-100"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] font-bold text-slate-500 mb-[-4px] uppercase"
+  }, "คิวที่"), /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl"
+  }, idx + 1)), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 min-w-0"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "text-base font-bold text-slate-800 mb-2 leading-tight"
+  }, item.topic), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-3 text-xs font-medium text-slate-500"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg"
+  }, /*#__PURE__*/React.createElement(User, {
+    size: 12,
+    className: "mr-1.5"
+  }), " ", item.staffName), /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center"
+  }, /*#__PURE__*/React.createElement(MapPin, {
+    size: 12,
+    className: "mr-1.5"
+  }), " ", item.location))), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 sm:opacity-0 group-hover:opacity-100 transition-opacity"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => handleEditKmQueue(item),
+    className: "p-2.5 bg-sky-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-colors"
+  }, /*#__PURE__*/React.createElement(Edit, {
+    size: 16
+  })), /*#__PURE__*/React.createElement("button", {
+    onClick: () => handleDeleteKmQueue(item.id),
+    className: "p-2.5 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-colors"
+  }, /*#__PURE__*/React.createElement(Trash2, {
+    size: 16
+  }))))))))), kmActiveSubTab === 'feed' && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-4 rounded-2xl border border-sky-100 shadow-sm flex items-center relative"
+  }, /*#__PURE__*/React.createElement(Search, {
+    className: "absolute left-7 text-slate-400",
+    size: 20
+  }), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: kmFeedSearch,
+    onChange: e => setKmFeedSearch(e.target.value),
+    placeholder: "ค้นหา หัวข้อ, ความรู้, หรือชื่อผู้เข้าอบรม...",
+    className: "w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition-all font-medium text-sm"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl card-shadow border border-sky-100 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "overflow-x-auto"
+  }, /*#__PURE__*/React.createElement("table", {
+    className: "w-full text-sm text-left"
+  }, /*#__PURE__*/React.createElement("thead", {
+    className: "text-xs text-blue-900 uppercase bg-sky-50 border-b border-sky-100"
+  }, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
+    className: "px-6 py-4 font-bold w-1/4"
+  }, "วันที่ / ผู้แบ่งปัน"), /*#__PURE__*/React.createElement("th", {
+    className: "px-6 py-4 font-bold"
+  }, "หลักสูตร / โครงการ"), /*#__PURE__*/React.createElement("th", {
+    className: "px-6 py-4 font-bold text-center w-24"
+  }, "รายละเอียด"))), /*#__PURE__*/React.createElement("tbody", {
+    className: "divide-y divide-sky-50"
+  }, kmFeedRecords.length === 0 ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: "3",
+    className: "px-6 py-16 text-center text-slate-400 font-medium"
+  }, "ยังไม่มีข้อมูลสรุปความรู้")) : kmFeedRecords.map((record, idx) => {
+    const isExpanded = expandedKmId === record.id;
+    return /*#__PURE__*/React.createElement(React.Fragment, {
+      key: `kmf-${record.id}-${idx}`
+    }, /*#__PURE__*/React.createElement("tr", {
+      onClick: () => toggleKmExpand(record.id),
+      className: `bg-white hover:bg-sky-50 transition-colors cursor-pointer group ${isExpanded ? 'bg-sky-50/50' : ''}`
+    }, /*#__PURE__*/React.createElement("td", {
+      className: "px-6 py-4 align-top"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "font-semibold text-sky-600 mb-1 text-xs"
+    }, /*#__PURE__*/React.createElement(Calendar, {
+      size: 12,
+      className: "inline mr-1"
+    }), " ", formatDisplayDate(record.startDate)), /*#__PURE__*/React.createElement("div", {
+      className: "font-bold text-slate-800"
+    }, record.staffName), /*#__PURE__*/React.createElement("div", {
+      className: "text-[10px] text-slate-500"
+    }, record.position)), /*#__PURE__*/React.createElement("td", {
+      className: "px-6 py-4 align-top"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "font-bold text-blue-900 text-base mb-1"
+    }, record.courseName), safeTrim(record.projectPlan) && /*#__PURE__*/React.createElement("div", {
+      className: "inline-flex items-center px-2 py-0.5 rounded text-indigo-600 text-[11px] font-medium bg-indigo-50 border border-indigo-100 mt-1"
+    }, /*#__PURE__*/React.createElement(Target, {
+      size: 10,
+      className: "mr-1"
+    }), " ", record.projectPlan)), /*#__PURE__*/React.createElement("td", {
+      className: "px-6 py-4 text-center align-middle"
+    }, /*#__PURE__*/React.createElement("button", {
+      className: `p-2 rounded-full transition-transform duration-300 ${isExpanded ? 'bg-blue-100 text-blue-700 rotate-180' : 'bg-slate-50 text-slate-400 group-hover:bg-sky-100'}`
+    }, /*#__PURE__*/React.createElement(ChevronDown, {
+      size: 18
+    })))), isExpanded && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+      colSpan: "3",
+      className: "p-0 border-b border-sky-100"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-slate-50/80 px-8 py-6 shadow-inner animate-fade border-l-4 border-l-blue-500"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-1 md:grid-cols-2 gap-6"
+    }, safeTrim(record.knowledgeSummary) && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "text-[11px] font-bold text-blue-800 mb-2 uppercase flex items-center bg-blue-100 px-2 py-1 rounded inline-flex"
+    }, /*#__PURE__*/React.createElement(Share2, {
+      size: 12,
+      className: "mr-1.5"
+    }), " สรุปความรู้ที่ได้"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white border border-slate-200 p-4 rounded-xl text-slate-700 text-sm whitespace-pre-wrap"
+    }, record.knowledgeSummary)), safeTrim(record.outcomes) && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "text-[11px] font-bold text-emerald-800 mb-2 uppercase flex items-center bg-emerald-100 px-2 py-1 rounded inline-flex"
+    }, /*#__PURE__*/React.createElement(Lightbulb, {
+      size: 12,
+      className: "mr-1.5"
+    }), " ผลลัพธ์ที่นำไปใช้"), /*#__PURE__*/React.createElement("div", {
+      className: "bg-white border border-slate-200 p-4 rounded-xl text-slate-700 text-sm whitespace-pre-wrap"
+    }, record.outcomes))), safeTrim(record.documentUrl) && /*#__PURE__*/React.createElement("div", {
+      className: "mt-5"
+    }, /*#__PURE__*/React.createElement("a", {
+      href: record.documentUrl,
+      target: "_blank",
+      rel: "noopener noreferrer",
+      className: "inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors shadow-md"
+    }, /*#__PURE__*/React.createElement(Link2, {
+      size: 16,
+      className: "mr-2"
+    }), " เปิดดูเอกสารประกอบ (Google Drive)"))))));
+  })))))), showKmModal && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl shadow-2xl max-w-xl w-full border border-sky-100 overflow-hidden flex flex-col"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-blue-900 p-5 flex justify-between items-center text-white"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-lg font-bold flex items-center"
+  }, /*#__PURE__*/React.createElement(Megaphone, {
+    className: "mr-3 text-sky-300",
+    size: 24
+  }), " ", kmFormData.id ? 'แก้ไขคิวจอง' : 'จองคิวแชร์ความรู้ (KM)'), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowKmModal(false),
+    className: "text-blue-200 hover:text-white transition-colors"
+  }, /*#__PURE__*/React.createElement(XCircle, {
+    size: 24
+  }))), /*#__PURE__*/React.createElement("form", {
+    onSubmit: handleKmQueueSubmit,
+    className: "p-6 space-y-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 gap-5"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-bold text-slate-700 mb-1.5"
+  }, "วันที่แชร์ (แนะนำ: พฤหัสบดี) ", /*#__PURE__*/React.createElement("span", {
+    className: "text-red-500"
+  }, "*")), /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    required: true,
+    value: kmFormData.date,
+    onChange: e => setKmFormData({
+      ...kmFormData,
+      date: e.target.value
+    }),
+    className: INPUT_CLASS
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-bold text-slate-700 mb-1.5"
+  }, "ผู้บรรยาย ", /*#__PURE__*/React.createElement("span", {
+    className: "text-red-500"
+  }, "*")), /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement(Search, {
+    className: "absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400",
+    size: 16
+  }), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    required: true,
+    className: INPUT_CLASS,
+    style: {
+      paddingLeft: '2.5rem'
+    },
+    placeholder: "ค้นหาชื่อ...",
+    value: kmSearchQuery,
+    onChange: e => {
+      setKmSearchQuery(e.target.value);
+      setKmFormData(prev => ({
+        ...prev,
+        staffName: e.target.value
+      }));
+      setShowKmStaffDropdown(true);
+    },
+    onFocus: () => setShowKmStaffDropdown(true)
+  })), showKmStaffDropdown && kmSearchQuery && /*#__PURE__*/React.createElement("div", {
+    className: "absolute z-[110] w-full mt-1 bg-white rounded-xl shadow-xl border border-sky-100 max-h-48 overflow-auto"
+  }, searchKmStaff.map(s => /*#__PURE__*/React.createElement("div", {
+    key: `ks-${s.id}`,
+    onClick: () => handleKmStaffSelect(s),
+    className: "px-4 py-2 hover:bg-sky-50 cursor-pointer text-sm font-semibold border-b border-slate-50"
+  }, s.name))))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-bold text-slate-700 mb-1.5"
+  }, "หัวข้อ / ชื่อเรื่องเก๋ๆ ", /*#__PURE__*/React.createElement("span", {
+    className: "text-red-500"
+  }, "*")), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    required: true,
+    value: kmFormData.topic,
+    onChange: e => setKmFormData({
+      ...kmFormData,
+      topic: e.target.value
+    }),
+    placeholder: "เช่น: พลิกโฉม ER ด้วยเทคนิคใหม่...",
+    className: INPUT_CLASS
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-bold text-slate-700 mb-1.5"
+  }, "สถานที่ ", /*#__PURE__*/React.createElement("span", {
+    className: "text-red-500"
+  }, "*")), /*#__PURE__*/React.createElement("select", {
+    value: kmFormData.location,
+    onChange: e => setKmFormData({
+      ...kmFormData,
+      location: e.target.value
+    }),
+    className: INPUT_CLASS
+  }, KM_LOCATIONS.map(l => /*#__PURE__*/React.createElement("option", {
+    key: l,
+    value: l
+  }, l)))), kmFormData.location === 'อื่นๆ (ระบุเอง)' && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold text-amber-600 mb-1"
+  }, "ระบุสถานที่เอง"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    required: true,
+    value: kmFormData.customLocation,
+    onChange: e => setKmFormData({
+      ...kmFormData,
+      customLocation: e.target.value
+    }),
+    placeholder: "พิมพ์สถานที่...",
+    className: `${INPUT_CLASS} border-amber-300`
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "pt-4 border-t border-slate-100 flex justify-end gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setShowKmModal(false),
+    className: "px-5 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200"
+  }, "ยกเลิก"), /*#__PURE__*/React.createElement("button", {
+    type: "submit",
+    disabled: isSaving,
+    className: "px-6 py-2.5 bg-blue-900 text-white font-bold rounded-xl shadow-md hover:bg-blue-950 flex items-center disabled:opacity-50"
+  }, /*#__PURE__*/React.createElement(Save, {
+    size: 18,
+    className: "mr-2"
+  }), " บันทึกคิว")))))), activeTab === 'form' && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl card-shadow border border-sky-100 p-8 max-w-5xl mx-auto relative z-10"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center mb-8 pb-4 border-b border-sky-100"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-bold text-blue-900"
+  }, editingId ? 'แก้ไขประวัติการอบรม' : 'เพิ่มประวัติการอบรมใหม่')), /*#__PURE__*/React.createElement("form", {
+    onSubmit: handleSubmit,
+    className: "space-y-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-sky-50/80 p-6 rounded-2xl border border-sky-100"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-base font-bold text-blue-900 mb-5 flex items-center"
+  }, /*#__PURE__*/React.createElement(User, {
+    className: "mr-2 text-sky-500",
+    size: 20
+  }), " 1. ข้อมูลบุคลากร"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 md:grid-cols-3 gap-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "col-span-1 relative"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "ค้นหารายชื่อบุคลากร ", /*#__PURE__*/React.createElement("span", {
+    className: "text-sky-500"
+  }, "*")), /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement(Search, {
+    className: "absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400",
+    size: 18
+  }), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    className: INPUT_CLASS,
+    style: {
+      paddingLeft: '2.5rem'
+    },
+    placeholder: "พิมพ์ชื่อ-สกุล...",
+    value: searchQuery,
+    onChange: handleSearchChange,
+    onFocus: () => setShowDropdown(true)
+  })), showDropdown && searchQuery && /*#__PURE__*/React.createElement("div", {
+    className: "absolute z-[100] w-full mt-1 bg-white rounded-xl shadow-xl border border-sky-100 max-h-60 overflow-auto"
+  }, searchFilteredStaff.length > 0 ? searchFilteredStaff.map((staff, idx) => /*#__PURE__*/React.createElement("div", {
+    key: `search-${staff.id}-${idx}`,
+    onClick: () => handleStaffSelect(staff),
+    className: "px-4 py-3 hover:bg-sky-50 cursor-pointer border-b border-sky-50 last:border-0 transition-colors"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "font-semibold text-sm text-slate-800"
+  }, staff.name), /*#__PURE__*/React.createElement("div", {
+    className: "text-[11px] font-medium text-slate-500 mt-1"
+  }, staff.position, " • ", staff.department))) : /*#__PURE__*/React.createElement("div", {
+    className: "px-4 py-4 text-sm font-medium text-slate-500 text-center"
+  }, "ไม่พบรายชื่อ (เพิ่มได้ที่แท็บจัดการบุคลากร)"))), /*#__PURE__*/React.createElement("div", {
+    className: "col-span-2 grid grid-cols-2 gap-6"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "ตำแหน่ง"), /*#__PURE__*/React.createElement("div", {
+    className: `w-full py-3 px-4 rounded-xl border-2 text-sm font-medium flex items-center h-[46px] ${formData.position ? POSITION_COLORS[formData.position] : 'bg-slate-50 border-slate-200 text-slate-400'}`
+  }, formData.position || 'ระบุอัตโนมัติ')), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "หน่วยงาน"), /*#__PURE__*/React.createElement("div", {
+    className: "w-full py-3 px-4 rounded-xl border-2 border-slate-200 bg-white text-sm font-medium flex items-center h-[46px] text-slate-700 shadow-sm"
+  }, formData.department || 'ระบุอัตโนมัติ'))))), /*#__PURE__*/React.createElement("div", {
+    className: "p-6 rounded-2xl border border-sky-100 bg-white"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-base font-bold text-blue-900 mb-5 flex items-center"
+  }, /*#__PURE__*/React.createElement(Award, {
+    className: "mr-2 text-sky-500",
+    size: 20
+  }), " 2. รายละเอียดหลักสูตรและการอบรม"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "col-span-1 md:col-span-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "ชื่อเรื่อง / หลักสูตร ", /*#__PURE__*/React.createElement("span", {
+    className: "text-sky-500"
+  }, "*")), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    name: "courseName",
+    value: formData.courseName,
+    onChange: handleInputChange,
+    required: true,
+    className: INPUT_CLASS,
+    placeholder: "ระบุชื่อหลักสูตรที่เข้าอบรมอย่างชัดเจน"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "col-span-1 md:col-span-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "รูปแบบการอบรม (Training Method)"), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-4"
+  }, TRAINING_METHODS.map((method, idx) => /*#__PURE__*/React.createElement("label", {
+    key: `method-${idx}`,
+    className: `flex items-center p-3 border-2 rounded-xl cursor-pointer transition-all ${formData.trainingMethod === method ? 'bg-sky-50 border-sky-400 shadow-sm' : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-sky-50/50'}`
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "radio",
+    name: "trainingMethod",
+    value: method,
+    checked: formData.trainingMethod === method,
+    onChange: handleInputChange,
+    className: "hidden"
+  }), method.includes('Onsite') && /*#__PURE__*/React.createElement(MapPin, {
+    size: 16,
+    className: `mr-2 ${formData.trainingMethod === method ? 'text-blue-600' : 'text-slate-400'}`
+  }), method.includes('Online') && /*#__PURE__*/React.createElement(Video, {
+    size: 16,
+    className: `mr-2 ${formData.trainingMethod === method ? 'text-blue-600' : 'text-slate-400'}`
+  }), method.includes('Hybrid') && /*#__PURE__*/React.createElement(Activity, {
+    size: 16,
+    className: `mr-2 ${formData.trainingMethod === method ? 'text-blue-600' : 'text-slate-400'}`
+  }), /*#__PURE__*/React.createElement("span", {
+    className: `text-sm font-medium ${formData.trainingMethod === method ? 'text-blue-900' : 'text-slate-600'}`
+  }, method))))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "วันที่เริ่มต้น ", /*#__PURE__*/React.createElement("span", {
+    className: "text-sky-500"
+  }, "*")), /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    name: "startDate",
+    value: formData.startDate,
+    onChange: handleInputChange,
+    required: true,
+    className: INPUT_CLASS
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "วันที่สิ้นสุด (ถ้ามี)"), /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    name: "endDate",
+    value: formData.endDate,
+    onChange: handleInputChange,
+    className: INPUT_CLASS
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2 flex justify-between items-center"
+  }, /*#__PURE__*/React.createElement("span", null, "จำนวนชั่วโมง ", /*#__PURE__*/React.createElement("span", {
+    className: "text-sky-500"
+  }, "*")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: calculateSuggestedHours,
+    className: "text-[11px] font-bold text-blue-800 bg-sky-100 px-2 py-1 rounded hover:bg-sky-200 transition"
+  }, "คลิก: อบรมเต็มวัน (7 ชม.)")), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    step: "0.5",
+    name: "hours",
+    value: formData.hours,
+    onChange: handleInputChange,
+    required: true,
+    className: INPUT_CLASS,
+    placeholder: "เช่น 1.5, 3, 7"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "หน่วยงานที่จัด (Host)"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    name: "host",
+    value: formData.host,
+    onChange: handleInputChange,
+    className: INPUT_CLASS,
+    placeholder: "เช่น รพ.โพธาราม, สสจ."
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "หมวดหมู่หลัก"), /*#__PURE__*/React.createElement("select", {
+    name: "category",
+    value: formData.category,
+    onChange: handleInputChange,
+    className: INPUT_CLASS
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "-- ไม่ระบุ --"), Object.keys(CATEGORIES).map((cat, idx) => /*#__PURE__*/React.createElement("option", {
+    key: `cat-${cat}-${idx}`,
+    value: cat
+  }, cat)))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "หมวดหมู่ย่อย"), /*#__PURE__*/React.createElement("select", {
+    name: "subCategory",
+    value: formData.subCategory,
+    onChange: handleInputChange,
+    disabled: !formData.category || formData.category === 'อื่นๆ (ระบุเอง)',
+    className: `${INPUT_CLASS} disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-200`
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "-- ไม่ระบุ --"), formData.category && CATEGORIES[formData.category]?.map((sub, idx) => /*#__PURE__*/React.createElement("option", {
+    key: `sub-${sub}-${idx}`,
+    value: sub
+  }, sub)))), formData.category === 'อื่นๆ (ระบุเอง)' && /*#__PURE__*/React.createElement("div", {
+    className: "col-span-1 md:col-span-2 p-4 bg-amber-50 border border-amber-200 rounded-xl mt-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 md:grid-cols-2 gap-4"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold text-amber-800 mb-1"
+  }, "ระบุหมวดหมู่หลักเอง"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    name: "customCategory",
+    value: formData.customCategory,
+    onChange: handleInputChange,
+    className: `${INPUT_CLASS} border-amber-300 focus:ring-amber-400`,
+    placeholder: "ระบุหมวดหมู่หลัก..."
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold text-amber-800 mb-1"
+  }, "ระบุหมวดหมู่ย่อยเอง"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    name: "customSubCategory",
+    value: formData.customSubCategory,
+    onChange: handleInputChange,
+    className: `${INPUT_CLASS} border-amber-300 focus:ring-amber-400`,
+    placeholder: "ระบุหมวดหมู่ย่อย..."
+  })))))), /*#__PURE__*/React.createElement("div", {
+    className: "p-6 rounded-2xl border border-indigo-100 bg-indigo-50/30"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-base font-bold text-indigo-900 mb-5 flex items-center"
+  }, /*#__PURE__*/React.createElement(Target, {
+    className: "mr-2 text-indigo-500",
+    size: 20
+  }), "3. ความสอดคล้องกับยุทธศาสตร์ / โครงการ", /*#__PURE__*/React.createElement("span", {
+    className: "ml-2 text-[11px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-normal"
+  }, "ไม่บังคับ")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "ชื่อแผนงาน / โครงการที่เกี่ยวข้อง"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    name: "projectPlan",
+    value: formData.projectPlan,
+    onChange: handleInputChange,
+    className: INPUT_CLASS,
+    placeholder: "เช่น โครงการพัฒนาระบบบริการพยาบาล, โครงการ Smart Hospital, ฯลฯ"
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-500 mt-2"
+  }, "ระบุโครงการของหน่วยงานหรือของโรงพยาบาล เพื่อใช้ติดตามตัวชี้วัดความสำเร็จ (KPIs)"))), /*#__PURE__*/React.createElement("div", {
+    className: "p-6 rounded-2xl border border-sky-100 bg-gradient-to-br from-sky-50/50 to-white"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "text-base font-bold text-blue-900 mb-5 flex items-center"
+  }, /*#__PURE__*/React.createElement(Lightbulb, {
+    className: "mr-2 text-amber-500",
+    size: 20
+  }), "4. การนำไปใช้ประโยชน์และผลลัพธ์ (KM & Outcomes)", /*#__PURE__*/React.createElement("span", {
+    className: "ml-2 text-[11px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-normal"
+  }, "ไม่บังคับ")), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 md:grid-cols-2 gap-6"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "สรุปความรู้ที่ได้รับ (Knowledge)"), /*#__PURE__*/React.createElement("textarea", {
+    name: "knowledgeSummary",
+    value: formData.knowledgeSummary,
+    onChange: handleInputChange,
+    rows: "4",
+    className: INPUT_CLASS,
+    placeholder: "สรุปสั้นๆ ว่าได้เรียนรู้อะไรใหม่ๆ (เนื้อหานี้จะไปแสดงในหน้าลานแลกเปลี่ยนความรู้ เพื่อให้เพื่อนร่วมงานได้อ่าน)"
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "ผลลัพธ์ที่เกิดขึ้น / การนำไปประยุกต์ใช้ (Outcomes)"), /*#__PURE__*/React.createElement("textarea", {
+    name: "outcomes",
+    value: formData.outcomes,
+    onChange: handleInputChange,
+    rows: "4",
+    className: `${INPUT_CLASS} border-emerald-200 focus:ring-emerald-400 focus:border-emerald-500`,
+    placeholder: "อบรมแล้วเกิดผลลัพธ์อะไร? เช่น ปรับปรุงคู่มือการทำงานใหม่, ลดอุบัติการณ์ความผิดพลาดลง, หรือตั้งเป้าว่าจะนำไปพัฒนานวัตกรรมอะไรต่อ..."
+  }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "ลิงก์เอกสารประกอบ / ภาพถ่ายการอบรม (Google Drive URL)"), /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement(Link2, {
+    className: "absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400",
+    size: 18
+  }), /*#__PURE__*/React.createElement("input", {
+    type: "url",
+    name: "documentUrl",
+    value: formData.documentUrl,
+    onChange: handleInputChange,
+    className: INPUT_CLASS,
+    style: {
+      paddingLeft: '2.5rem'
+    },
+    placeholder: "https://drive.google.com/..."
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-500 mt-2 flex items-start"
+  }, /*#__PURE__*/React.createElement(Info, {
+    size: 14,
+    className: "mr-1.5 flex-shrink-0 mt-0.5 text-blue-500"
+  }), /*#__PURE__*/React.createElement("span", null, "วิธีใช้: อัปโหลดไฟล์ PDF, สไลด์ ลงใน Google Drive ของคุณเอง ตั้งค่าแชร์เป็น \"ทุกคนที่มีลิงก์\" แล้วคัดลอกลิงก์มาวางที่นี่"))))), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-4 pt-4 border-t border-sky-100"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "submit",
+    disabled: isSaving,
+    className: "flex-1 bg-blue-900 hover:bg-blue-950 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-blue-900/30 flex justify-center items-center transition-all disabled:opacity-50 text-base"
+  }, /*#__PURE__*/React.createElement(Save, {
+    className: "mr-2",
+    size: 20
+  }), " ", editingId ? 'บันทึกการแก้ไขไปยัง Sheet' : 'เพิ่มข้อมูลประวัติไปยัง Sheet'), editingId && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: resetForm,
+    disabled: isSaving,
+    className: "px-8 py-4 bg-white border-2 border-sky-200 hover:bg-sky-50 text-blue-900 font-bold rounded-xl transition-colors disabled:opacity-50"
+  }, "ยกเลิก")))), activeTab === 'records' && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl card-shadow border border-sky-100 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "p-6 border-b border-sky-100 bg-sky-50/50"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col md:flex-row items-center justify-between gap-4 mb-6"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-blue-900 flex items-center"
+  }, /*#__PURE__*/React.createElement(Filter, {
+    size: 20,
+    className: "mr-2 text-sky-500"
+  }), " ตัวกรองประวัติการอบรม"), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center space-x-4"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-semibold text-blue-800 bg-sky-100 px-3 py-1 rounded-lg"
+  }, "พบ ", filteredRecords.length, " รายการ"), /*#__PURE__*/React.createElement("button", {
+    onClick: handleExportCSV,
+    className: "flex items-center text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-xl shadow-md shadow-emerald-500/20 transition-all"
+  }, /*#__PURE__*/React.createElement(Download, {
+    size: 16,
+    className: "mr-2"
+  }), " โหลด Excel"))), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 md:grid-cols-3 gap-5"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+  }, "ปีงบประมาณ"), /*#__PURE__*/React.createElement("select", {
+    value: filterYear,
+    onChange: e => setFilterYear(e.target.value),
+    className: INPUT_CLASS
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "-- ดูทุกปีงบประมาณ --"), availableYears.map((year, idx) => /*#__PURE__*/React.createElement("option", {
+    key: `f-year-${year}-${idx}`,
+    value: year
+  }, "ปีงบประมาณ ", year)))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+  }, "หน่วยงาน"), /*#__PURE__*/React.createElement("select", {
+    value: filterDept,
+    onChange: e => setFilterDept(e.target.value),
+    className: INPUT_CLASS
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "-- ดูทุกหน่วยงาน --"), DEPARTMENTS.map((dept, idx) => /*#__PURE__*/React.createElement("option", {
+    key: `f-dept-${dept}-${idx}`,
+    value: dept
+  }, dept)))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+  }, "ค้นหารายบุคคล"), /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement(Search, {
+    className: "absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400",
+    size: 16
+  }), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: filterName,
+    onChange: e => setFilterName(e.target.value),
+    placeholder: "พิมพ์ชื่อบุคลากร...",
+    className: INPUT_CLASS,
+    style: {
+      paddingLeft: '2.5rem'
+    }
+  }))))), /*#__PURE__*/React.createElement("div", {
+    className: "overflow-x-auto"
+  }, /*#__PURE__*/React.createElement("table", {
+    className: "w-full text-sm text-left"
+  }, /*#__PURE__*/React.createElement("thead", {
+    className: "text-xs text-blue-900 uppercase bg-sky-50 border-b border-sky-100"
+  }, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
+    className: "px-6 py-4 font-bold tracking-wide"
+  }, "บุคลากร / หน่วยงาน"), /*#__PURE__*/React.createElement("th", {
+    className: "px-6 py-4 font-bold tracking-wide"
+  }, "หลักสูตร / วันที่อบรม"), /*#__PURE__*/React.createElement("th", {
+    className: "px-6 py-4 font-bold tracking-wide text-center"
+  }, "ปีงบฯ"), /*#__PURE__*/React.createElement("th", {
+    className: "px-6 py-4 font-bold tracking-wide text-center"
+  }, "ชั่วโมง"), /*#__PURE__*/React.createElement("th", {
+    className: "px-6 py-4 font-bold tracking-wide text-right"
+  }, "จัดการ"))), /*#__PURE__*/React.createElement("tbody", {
+    className: "divide-y divide-sky-50"
+  }, currentRecords.length === 0 ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: "5",
+    className: "px-6 py-16 text-center font-medium text-slate-400"
+  }, "ไม่พบประวัติการอบรมตามเงื่อนไขที่ค้นหา")) : currentRecords.map((record, idx) => {
+    const recKey = `rec-${record.id ? record.id : 'no-id'}-${idx}`;
+    const hasKm = Boolean(safeTrim(record.knowledgeSummary) || safeTrim(record.documentUrl) || safeTrim(record.outcomes) || safeTrim(record.projectPlan));
+    return /*#__PURE__*/React.createElement("tr", {
+      key: recKey,
+      className: "bg-white hover:bg-sky-50/50 transition-colors group"
+    }, /*#__PURE__*/React.createElement("td", {
+      className: "px-6 py-4"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "font-bold text-slate-800"
+    }, record.staffName), /*#__PURE__*/React.createElement("div", {
+      className: "text-[11px] font-medium text-slate-500 mt-1"
+    }, record.position, " • ", record.department)), /*#__PURE__*/React.createElement("td", {
+      className: "px-6 py-4 max-w-sm"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "font-semibold text-slate-800 truncate",
+      title: record.courseName
+    }, record.courseName), /*#__PURE__*/React.createElement("div", {
+      className: "text-xs font-medium text-slate-500 mt-1.5 flex items-center flex-wrap gap-y-1"
+    }, /*#__PURE__*/React.createElement(Calendar, {
+      size: 12,
+      className: "mr-1.5 text-sky-500"
+    }), " ", formatDisplayDate(record.startDate), record.trainingMethod && /*#__PURE__*/React.createElement("span", {
+      className: "ml-3 px-2 py-0.5 bg-sky-100 text-blue-800 rounded text-[10px]"
+    }, safeStr(record.trainingMethod).split(' ')[0]), hasKm && /*#__PURE__*/React.createElement("span", {
+      className: "ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded flex items-center text-[10px]",
+      title: "มีการผูกแผนงาน หรือแชร์ความรู้/ผลลัพธ์"
+    }, /*#__PURE__*/React.createElement(Lightbulb, {
+      size: 10,
+      className: "mr-1"
+    }), " KM"))), /*#__PURE__*/React.createElement("td", {
+      className: "px-6 py-4 text-center"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "bg-sky-100 text-blue-800 px-2 py-1 rounded-md text-xs font-bold"
+    }, record.fiscalYear || '-')), /*#__PURE__*/React.createElement("td", {
+      className: "px-6 py-4 text-center"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "inline-flex items-center justify-center w-8 h-8 rounded-full bg-sky-100 text-blue-800 font-bold border border-sky-200"
+    }, record.hours)), /*#__PURE__*/React.createElement("td", {
+      className: "px-6 py-4 text-right whitespace-nowrap"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => handleEdit(record),
+      className: "p-2 text-slate-400 hover:text-blue-600 hover:bg-sky-100 rounded-lg transition-colors",
+      title: "แก้ไข"
+    }, /*#__PURE__*/React.createElement(Edit, {
+      size: 16
+    })), /*#__PURE__*/React.createElement("button", {
+      onClick: () => handleDelete(record.id),
+      className: "p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-1",
+      title: "ลบ"
+    }, /*#__PURE__*/React.createElement(Trash2, {
+      size: 16
+    }))));
+  })))), totalPages > 1 && /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col sm:flex-row justify-between items-center p-5 bg-sky-50/50 border-t border-sky-100 gap-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-medium text-slate-500"
+  }, "แสดง ", /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-blue-900"
+  }, indexOfFirstRecord + 1), " ถึง ", /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-blue-900"
+  }, Math.min(indexOfLastRecord, filteredRecords.length)), " จากทั้งหมด ", /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-blue-900"
+  }, filteredRecords.length), " รายการ"), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setCurrentPage(prev => Math.max(prev - 1, 1)),
+    disabled: currentPage === 1,
+    className: "p-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-sky-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+  }, /*#__PURE__*/React.createElement(ChevronLeft, {
+    size: 20
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-bold text-blue-900 px-3 py-1 bg-white rounded-lg border border-sky-100 shadow-sm"
+  }, "หน้า ", currentPage, " / ", totalPages), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setCurrentPage(prev => Math.min(prev + 1, totalPages)),
+    disabled: currentPage === totalPages,
+    className: "p-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-sky-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+  }, /*#__PURE__*/React.createElement(ChevronRight, {
+    size: 20
+  }))))), activeTab === 'dashboard' && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-5 rounded-2xl card-shadow border border-sky-100 flex flex-wrap gap-4 items-center justify-between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-4 items-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-bold text-blue-900 flex items-center"
+  }, /*#__PURE__*/React.createElement(Filter, {
+    size: 16,
+    className: "mr-2 text-sky-500"
+  }), " กรองรายงานภาพรวม:"), /*#__PURE__*/React.createElement("select", {
+    value: filterYear,
+    onChange: e => setFilterYear(e.target.value),
+    className: "p-2.5 text-sm font-medium border-2 border-slate-300 rounded-xl outline-none bg-sky-50 focus:border-sky-400 min-w-[150px]"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "ทุกปีงบประมาณ"), availableYears.map((year, idx) => /*#__PURE__*/React.createElement("option", {
+    key: `d-year-${year}-${idx}`,
+    value: year
+  }, "ปี ", year))), /*#__PURE__*/React.createElement("select", {
+    value: filterDept,
+    onChange: e => setFilterDept(e.target.value),
+    className: "p-2.5 text-sm font-medium border-2 border-slate-300 rounded-xl outline-none bg-sky-50 focus:border-sky-400 min-w-[200px]"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "ทุกหน่วยงาน"), DEPARTMENTS.map((dept, idx) => /*#__PURE__*/React.createElement("option", {
+    key: `d-dept-${dept}-${idx}`,
+    value: dept
+  }, dept)))), /*#__PURE__*/React.createElement("button", {
+    onClick: handleExportCSV,
+    className: "flex items-center text-sm font-bold bg-blue-900 hover:bg-blue-950 text-white py-2.5 px-5 rounded-xl shadow-md shadow-blue-900/20 transition-colors"
+  }, /*#__PURE__*/React.createElement(Download, {
+    size: 16,
+    className: "mr-2"
+  }), " โหลดรายงาน Excel")), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 md:grid-cols-3 gap-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-6 rounded-3xl border border-sky-100 card-shadow flex items-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-14 h-14 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center mr-5 shadow-inner"
+  }, /*#__PURE__*/React.createElement(Users, {
+    size: 28
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-bold text-slate-500 mb-1"
+  }, "บุคลากรที่แสดงผล"), /*#__PURE__*/React.createElement("h3", {
+    className: "text-3xl font-black text-slate-800"
+  }, dashboardStats.length, " ", /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-semibold text-slate-400"
+  }, "คน")))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-6 rounded-3xl border border-sky-100 card-shadow flex items-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mr-5 shadow-inner"
+  }, /*#__PURE__*/React.createElement(FileText, {
+    size: 28
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-bold text-slate-500 mb-1"
+  }, "จำนวนครั้งการอบรม"), /*#__PURE__*/React.createElement("h3", {
+    className: "text-3xl font-black text-slate-800"
+  }, filteredRecords.length, " ", /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-semibold text-slate-400"
+  }, "ครั้ง")))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-6 rounded-3xl border border-sky-100 card-shadow flex items-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-14 h-14 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center mr-5 shadow-inner"
+  }, /*#__PURE__*/React.createElement(Clock, {
+    size: 28
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-bold text-slate-500 mb-1"
+  }, "ชั่วโมงสะสมรวม"), /*#__PURE__*/React.createElement("h3", {
+    className: "text-3xl font-black text-slate-800"
+  }, Math.round(dashboardStats.reduce((acc, curr) => acc + curr.totalHours, 0)), " ", /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-semibold text-slate-400"
+  }, "ชม."))))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl border border-sky-100 card-shadow p-6"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-lg font-bold text-blue-900 mb-4 flex items-center"
+  }, /*#__PURE__*/React.createElement(Award, {
+    className: "mr-3 text-sky-500",
+    size: 20
+  }), " สรุปผลการผ่านเกณฑ์ (อบรมครบตามเป้าหมาย)"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 md:grid-cols-4 gap-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-slate-50 rounded-2xl p-4 border border-slate-100 text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs font-bold text-slate-500 mb-1"
+  }, "ภาพรวมทั้งหมด"), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-baseline justify-center gap-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl font-black text-emerald-600"
+  }, completionStats.total.passed), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-bold text-slate-400"
+  }, "/ ", completionStats.total.all, " คน")), /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-slate-200 rounded-full h-1.5 mt-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-emerald-500 h-1.5 rounded-full",
+    style: {
+      width: `${completionStats.total.all > 0 ? completionStats.total.passed / completionStats.total.all * 100 : 0}%`
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-sky-50/50 rounded-2xl p-4 border border-sky-100 text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs font-bold text-blue-800 mb-1"
+  }, POSITIONS.NURSE), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-baseline justify-center gap-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl font-black text-emerald-600"
+  }, completionStats[POSITIONS.NURSE].passed), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-bold text-slate-400"
+  }, "/ ", completionStats[POSITIONS.NURSE].all))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-indigo-50/50 rounded-2xl p-4 border border-indigo-100 text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs font-bold text-indigo-800 mb-1"
+  }, POSITIONS.PN), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-baseline justify-center gap-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl font-black text-emerald-600"
+  }, completionStats[POSITIONS.PN].passed), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-bold text-slate-400"
+  }, "/ ", completionStats[POSITIONS.PN].all))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-teal-50/50 rounded-2xl p-4 border border-teal-100 text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs font-bold text-teal-800 mb-1"
+  }, POSITIONS.ORDERLY), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-baseline justify-center gap-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-2xl font-black text-emerald-600"
+  }, completionStats[POSITIONS.ORDERLY].passed), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-bold text-slate-400"
+  }, "/ ", completionStats[POSITIONS.ORDERLY].all))))), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 lg:grid-cols-2 gap-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl border border-sky-100 card-shadow p-8"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-base font-bold text-blue-900 mb-6 flex items-center"
+  }, /*#__PURE__*/React.createElement(PieChart, {
+    className: "mr-3 text-sky-500",
+    size: 20
+  }), " สัดส่วนชั่วโมงตามหมวดหมู่การอบรม", filterYear && /*#__PURE__*/React.createElement("span", {
+    className: "ml-3 text-[11px] bg-sky-100 text-blue-800 px-2.5 py-1 rounded-md"
+  }, "ปี ", filterYear)), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-5"
+  }, categoryStats.length === 0 ? /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-medium text-slate-400 text-center py-6"
+  }, "ไม่มีข้อมูล") : categoryStats.map(([cat, hours], idx) => {
+    const maxHours = categoryStats[0][1];
+    const percent = Math.round(hours / maxHours * 100);
+    return /*#__PURE__*/React.createElement("div", {
+      key: `catstat-${idx}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between text-sm font-semibold mb-1.5"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-slate-700 truncate pr-4"
+    }, cat), /*#__PURE__*/React.createElement("span", {
+      className: "text-blue-600"
+    }, hours, " ชม.")), /*#__PURE__*/React.createElement("div", {
+      className: "w-full bg-sky-50 rounded-full h-2.5 shadow-inner"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bg-gradient-to-r from-sky-400 to-blue-600 h-2.5 rounded-full",
+      style: {
+        width: `${percent}%`
+      }
+    })));
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl border border-sky-100 card-shadow p-8"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-base font-bold text-blue-900 mb-6 flex items-center"
+  }, /*#__PURE__*/React.createElement(TrendingUp, {
+    className: "mr-3 text-sky-500",
+    size: 20
+  }), " แนวโน้มชั่วโมงรวมย้อนหลัง (สูงสุด 3 ปี)", filterDept && /*#__PURE__*/React.createElement("span", {
+    className: "ml-3 text-[11px] bg-sky-100 text-blue-800 px-2.5 py-1 rounded-md"
+  }, filterDept)), /*#__PURE__*/React.createElement("div", {
+    className: "h-56 flex items-end justify-around pt-8 pb-6 relative"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "absolute bottom-6 left-0 right-0 border-b-2 border-sky-100"
+  }), yearlyTrend.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "absolute inset-0 flex items-center justify-center text-sm font-medium text-slate-400"
+  }, "ไม่มีข้อมูล") : yearlyTrend.map((data, idx) => {
+    const maxTrend = Math.max(...yearlyTrend.map(d => d.hours), 1);
+    const height = data.hours > 0 ? Math.max(2, Math.round(data.hours / maxTrend * 100)) : 0;
+    return /*#__PURE__*/React.createElement("div", {
+      key: `trend-${data.year}-${idx}`,
+      className: "relative h-full flex flex-col justify-end items-center w-1/5 group cursor-pointer z-10"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity text-sm font-bold text-blue-800 bg-sky-100 px-3 py-1 rounded-lg shadow border border-sky-200 whitespace-nowrap"
+    }, data.hours, " ชม."), /*#__PURE__*/React.createElement("div", {
+      className: "w-full bg-gradient-to-t from-blue-800 to-sky-500 rounded-t-xl transition-all duration-500 group-hover:from-blue-700 group-hover:to-sky-400 shadow-md",
+      style: {
+        height: `${height}%`,
+        minHeight: data.hours > 0 ? '4px' : '0'
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "absolute -bottom-7 mt-2 text-sm font-bold text-slate-600"
+    }, "ปี ", data.year));
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl border border-sky-100 card-shadow p-8"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-blue-900 mb-6 flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center"
+  }, /*#__PURE__*/React.createElement(BarChart2, {
+    className: "mr-3 text-sky-500",
+    size: 24
+  }), " แถบความก้าวหน้ารายบุคคล", filterYear && /*#__PURE__*/React.createElement("span", {
+    className: "ml-3 text-xs bg-sky-100 text-blue-800 px-3 py-1.5 rounded-lg font-bold"
+  }, "อ้างอิงปีงบฯ ", filterYear))), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-4 mb-6 p-4 bg-slate-50 border border-slate-100 rounded-2xl items-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2 p-1 bg-white rounded-xl shadow-sm border border-slate-200"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setFilterCompletion('all'),
+    className: `px-4 py-2 text-sm font-bold rounded-lg transition-all ${filterCompletion === 'all' ? 'bg-blue-50 text-blue-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`
+  }, "ทั้งหมด"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setFilterCompletion('passed'),
+    className: `px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center ${filterCompletion === 'passed' ? 'bg-emerald-50 text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-emerald-600'}`
+  }, /*#__PURE__*/React.createElement(CheckCircle, {
+    size: 14,
+    className: "mr-1.5"
+  }), " ผ่านเกณฑ์"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setFilterCompletion('failed'),
+    className: `px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center ${filterCompletion === 'failed' ? 'bg-rose-50 text-rose-500 shadow-sm' : 'text-slate-500 hover:text-rose-500'}`
+  }, /*#__PURE__*/React.createElement(XCircle, {
+    size: 14,
+    className: "mr-1.5"
+  }), " ยังไม่ผ่าน")), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-3"
+  }, /*#__PURE__*/React.createElement("select", {
+    value: progFilterPos,
+    onChange: e => setProgFilterPos(e.target.value),
+    className: "p-2.5 text-sm font-bold border-2 border-slate-200 rounded-xl outline-none bg-white focus:border-sky-400 text-slate-700"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "-- กรองตำแหน่ง --"), /*#__PURE__*/React.createElement("option", {
+    value: POSITIONS.NURSE
+  }, POSITIONS.NURSE), /*#__PURE__*/React.createElement("option", {
+    value: POSITIONS.PN
+  }, POSITIONS.PN), /*#__PURE__*/React.createElement("option", {
+    value: POSITIONS.ORDERLY
+  }, POSITIONS.ORDERLY)), /*#__PURE__*/React.createElement("select", {
+    value: progFilterDept,
+    onChange: e => setProgFilterDept(e.target.value),
+    className: "p-2.5 text-sm font-bold border-2 border-slate-200 rounded-xl outline-none bg-white focus:border-sky-400 text-slate-700 max-w-[200px]"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "-- กรองหน่วยงาน --"), DEPARTMENTS.map((dept, idx) => /*#__PURE__*/React.createElement("option", {
+    key: `prog-dept-${dept}-${idx}`,
+    value: dept
+  }, dept))))), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-6"
+  }, displayedDashboardStats.length === 0 ? /*#__PURE__*/React.createElement("p", {
+    className: "text-center text-slate-400 py-8 font-medium"
+  }, "ไม่พบรายชื่อในหมวดหมู่นี้") : displayedDashboardStats.map((stat, idx) => {
+    const percent = Math.min(100, Math.round(stat.totalHours / stat.targetHours * 100));
+    const isCompleted = stat.totalHours >= stat.targetHours;
+    return /*#__PURE__*/React.createElement("div", {
+      key: `prog-${stat.id}-${idx}`,
+      className: "relative"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between items-end mb-2"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h4", {
+      className: "font-bold text-slate-800 text-base flex items-center"
+    }, stat.name, " ", isCompleted && /*#__PURE__*/React.createElement(CheckCircle, {
+      size: 16,
+      className: "ml-2 text-emerald-500 drop-shadow-sm"
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "text-[11px] font-semibold text-slate-400 mt-1 uppercase tracking-wide"
+    }, stat.position, " (", stat.targetHours, " ชม.) • ", stat.department)), /*#__PURE__*/React.createElement("div", {
+      className: "text-right"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: `text-xl font-black ${isCompleted ? 'text-emerald-500' : 'text-slate-700'}`
+    }, stat.totalHours, " ", /*#__PURE__*/React.createElement("span", {
+      className: "text-xs font-bold text-slate-400"
+    }, "/ ", stat.targetHours)))), /*#__PURE__*/React.createElement("div", {
+      className: "w-full bg-slate-100 rounded-full h-3 shadow-inner overflow-hidden"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: `h-full rounded-full transition-all duration-700 ease-out ${isCompleted ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : percent > 50 ? 'bg-gradient-to-r from-blue-800 to-sky-400' : 'bg-gradient-to-r from-amber-400 to-orange-400'}`,
+      style: {
+        width: `${percent}%`
+      }
+    })));
+  })))), activeTab === 'staff' && /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 lg:grid-cols-3 gap-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "col-span-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-8 rounded-3xl border border-sky-100 card-shadow sticky top-24"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-blue-900 mb-6 flex items-center"
+  }, /*#__PURE__*/React.createElement(Building2, {
+    className: "mr-3 text-sky-500",
+    size: 24
+  }), " ", editingStaffId ? 'แก้ไขรายชื่อ' : 'เพิ่มรายชื่อบุคลากร'), /*#__PURE__*/React.createElement("form", {
+    onSubmit: handleStaffSubmit,
+    className: "space-y-5"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "ชื่อ - นามสกุล ", /*#__PURE__*/React.createElement("span", {
+    className: "text-sky-500"
+  }, "*")), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    required: true,
+    value: staffForm.name,
+    onChange: e => setStaffForm({
+      ...staffForm,
+      name: e.target.value
+    }),
+    className: INPUT_CLASS,
+    placeholder: "ระบุชื่อเต็ม..."
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "ตำแหน่ง"), /*#__PURE__*/React.createElement("select", {
+    value: staffForm.position,
+    onChange: e => setStaffForm({
+      ...staffForm,
+      position: e.target.value
+    }),
+    className: INPUT_CLASS
+  }, /*#__PURE__*/React.createElement("option", {
+    value: POSITIONS.NURSE
+  }, POSITIONS.NURSE), /*#__PURE__*/React.createElement("option", {
+    value: POSITIONS.PN
+  }, POSITIONS.PN), /*#__PURE__*/React.createElement("option", {
+    value: POSITIONS.ORDERLY
+  }, POSITIONS.ORDERLY))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "หน่วยงาน"), /*#__PURE__*/React.createElement("select", {
+    value: staffForm.department,
+    onChange: e => setStaffForm({
+      ...staffForm,
+      department: e.target.value
+    }),
+    className: INPUT_CLASS
+  }, DEPARTMENTS.map((d, idx) => /*#__PURE__*/React.createElement("option", {
+    key: `opt-dept-${d}-${idx}`,
+    value: d
+  }, d)))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm font-semibold text-slate-700 mb-2"
+  }, "สถานะ"), /*#__PURE__*/React.createElement("select", {
+    value: staffForm.status || STAFF_STATUS.ACTIVE,
+    onChange: e => setStaffForm({
+      ...staffForm,
+      status: e.target.value
+    }),
+    className: INPUT_CLASS
+  }, /*#__PURE__*/React.createElement("option", {
+    value: STAFF_STATUS.ACTIVE
+  }, STAFF_STATUS.ACTIVE), /*#__PURE__*/React.createElement("option", {
+    value: STAFF_STATUS.INACTIVE
+  }, STAFF_STATUS.INACTIVE)), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-500 mt-1.5"
+  }, "คนที่ไม่ได้ปฏิบัติงาน จะไม่ถูกนับในสถิติทั้งหมด")), /*#__PURE__*/React.createElement("div", {
+    className: "pt-4"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "submit",
+    disabled: isSaving,
+    className: "w-full bg-blue-900 hover:bg-blue-950 text-white font-bold py-3.5 px-4 rounded-xl flex justify-center items-center transition shadow-lg disabled:opacity-50"
+  }, /*#__PURE__*/React.createElement(Save, {
+    size: 18,
+    className: "mr-2"
+  }), " บันทึกลง Sheet"), editingStaffId && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: isSaving,
+    onClick: () => {
+      setEditingStaffId(null);
+      setStaffForm({
+        id: '',
+        name: '',
+        position: POSITIONS.NURSE,
+        department: DEPARTMENTS[0],
+        status: STAFF_STATUS.ACTIVE
+      });
+    },
+    className: "w-full mt-3 bg-white border-2 border-sky-200 text-slate-700 font-bold py-3 rounded-xl disabled:opacity-50"
+  }, "ยกเลิก"))))), /*#__PURE__*/React.createElement("div", {
+    className: "col-span-1 lg:col-span-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-3xl border border-sky-100 card-shadow overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "p-5 border-b border-sky-100 flex flex-col gap-4 bg-sky-50/50"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col sm:flex-row justify-between items-center gap-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 w-full sm:w-auto"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-bold text-blue-900 flex items-center whitespace-nowrap"
+  }, "รายชื่อในระบบ"), /*#__PURE__*/React.createElement("span", {
+    className: "bg-sky-100 text-blue-800 text-sm font-bold px-4 py-1.5 rounded-lg whitespace-nowrap"
+  }, displayedStaffList.length, " คน")), /*#__PURE__*/React.createElement("div", {
+    className: "relative w-full sm:max-w-xs"
+  }, /*#__PURE__*/React.createElement(Search, {
+    className: "absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400",
+    size: 16
+  }), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: staffSearchQuery,
+    onChange: e => setStaffSearchQuery(e.target.value),
+    placeholder: "ค้นหาชื่อ หรือ หน่วยงาน...",
+    className: "w-full pl-9 pr-4 py-2.5 border-2 border-slate-200 rounded-xl text-sm font-medium bg-white outline-none focus:border-sky-400 transition-colors"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setStaffStatusFilter('all'),
+    className: `px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${staffStatusFilter === 'all' ? 'bg-blue-900 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-sky-50'}`
+  }, "ทั้งหมด"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setStaffStatusFilter(STAFF_STATUS.ACTIVE),
+    className: `px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${staffStatusFilter === STAFF_STATUS.ACTIVE ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50'}`
+  }, "ปฏิบัติงาน"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setStaffStatusFilter(STAFF_STATUS.INACTIVE),
+    className: `px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${staffStatusFilter === STAFF_STATUS.INACTIVE ? 'bg-slate-500 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`
+  }, "ไม่ได้ปฏิบัติงาน"))), /*#__PURE__*/React.createElement("div", {
+    className: "max-h-[650px] overflow-y-auto"
+  }, /*#__PURE__*/React.createElement("table", {
+    className: "w-full text-sm text-left"
+  }, /*#__PURE__*/React.createElement("thead", {
+    className: "text-xs text-blue-900 uppercase bg-white border-b border-sky-100 sticky top-0 z-10 shadow-sm"
+  }, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
+    className: "px-6 py-4 font-bold"
+  }, "ชื่อ-สกุล"), /*#__PURE__*/React.createElement("th", {
+    className: "px-6 py-4 font-bold"
+  }, "ตำแหน่ง/หน่วยงาน"), /*#__PURE__*/React.createElement("th", {
+    className: "px-6 py-4 font-bold text-center"
+  }, "สถานะ"), /*#__PURE__*/React.createElement("th", {
+    className: "px-6 py-4 font-bold text-center"
+  }, "เป้าหมาย"), /*#__PURE__*/React.createElement("th", {
+    className: "px-6 py-4 font-bold text-right"
+  }, "จัดการ"))), /*#__PURE__*/React.createElement("tbody", {
+    className: "divide-y divide-sky-50"
+  }, displayedStaffList.length === 0 ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: "5",
+    className: "px-6 py-12 text-center font-medium text-slate-400"
+  }, "ไม่พบรายชื่อที่ค้นหา")) : displayedStaffList.map((staff, idx) => {
+    const rowKey = `tbl-staff-${staff.id ? staff.id : 'no-id'}-${idx}`;
+    const status = staff.status || STAFF_STATUS.ACTIVE;
+    return /*#__PURE__*/React.createElement("tr", {
+      key: rowKey,
+      className: `hover:bg-sky-50/50 transition-colors ${status !== STAFF_STATUS.ACTIVE ? 'opacity-70' : ''}`
+    }, /*#__PURE__*/React.createElement("td", {
+      className: "px-6 py-4 font-bold text-slate-800"
+    }, safeStr(staff.name)), /*#__PURE__*/React.createElement("td", {
+      className: "px-6 py-4"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: `text-[10px] font-bold px-2.5 py-0.5 rounded-md border ${POSITION_COLORS[staff.position] || 'bg-slate-50 border-slate-200 text-slate-500'} mr-2`
+    }, safeStr(staff.position)), /*#__PURE__*/React.createElement("span", {
+      className: "text-slate-500 font-medium text-xs"
+    }, safeStr(staff.department))), /*#__PURE__*/React.createElement("td", {
+      className: "px-6 py-4 text-center"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: `text-[10px] font-bold px-2.5 py-1 rounded-md border ${STATUS_COLORS[status] || STATUS_COLORS[STAFF_STATUS.ACTIVE]}`
+    }, status)), /*#__PURE__*/React.createElement("td", {
+      className: "px-6 py-4 text-center text-slate-600 font-bold"
+    }, staff.targetHours, " ", /*#__PURE__*/React.createElement("span", {
+      className: "text-[10px] font-medium text-slate-400"
+    }, "ชม.")), /*#__PURE__*/React.createElement("td", {
+      className: "px-6 py-4 text-right whitespace-nowrap"
+    }, /*#__PURE__*/React.createElement("button", {
+      onClick: () => handleEditStaff(staff),
+      className: "p-2 text-slate-400 hover:text-blue-600 hover:bg-sky-100 rounded-lg transition-colors"
+    }, /*#__PURE__*/React.createElement(Edit, {
+      size: 16
+    })), /*#__PURE__*/React.createElement("button", {
+      onClick: () => handleDeleteStaff(staff.id),
+      className: "p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-1"
+    }, /*#__PURE__*/React.createElement(Trash2, {
+      size: 16
+    }))));
+  }))))))))));
+}
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(/*#__PURE__*/React.createElement(App, null));
+  </script>
+</body>
+</html>
